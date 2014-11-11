@@ -1,41 +1,22 @@
 <?php
 // bugassign.php
 // Ron Patterson, WildDog Design
-// SQLite version
-require("btsession.php");
+// MongoDB version
 # bugassign.php
 # Ron Patterson
 #print_r($_SESSION);
-// connect to the database 
-require_once("dbdef.php");
-require("BugTrack.class.php");
-$db = new BugTrack($dbpath);
 $ttl="BugTrack Assignment Search";
 require("bugcommon.php");
-$id=intval($_GET["id"]);
+$id=$_POST["id"];
+$bid=$_POST["bid"];
 # show the selection page
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-	<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
-	<title>BugTrack Assignment Search</title>
-	<meta name="author" content="Ron Patterson, ASD20">
-	<link type="text/css" rel="stylesheet" href="bugtrack.css" title="bt styles">
-	<script type="text/javascript" src="/lib/scripts/DataTables/media/js/jquery.js"></script>
-	<script type="text/javascript" src="fieldedits.js"></script>
-</head>
-<body background="" bgcolor="white" onload="document.form1.lname.focus();">
 <div class="bugform">
-	<table align="center">
-	<tr><td><img src="BugTrack.gif" alt="BugTrack"></td><td width="30">&nbsp;</td>
-	<td valign="middle"><font size="+1"><b><?php echo $ttl; ?></b></font></td></tr>
-	</table><br>
-
-<form name="bt_form9" id="bt_form9" enctype="x-www-form-encoded">
+<form name="bt_form9" id="bt_form9" enctype="x-www-form-encoded" onsubmit="return bt.assign_list();">
 <h5>You can search on any of the fields listed below. The more
-information you fill in, the narrower the search becomes.
-<input type="hidden" name="id" value="<?php echo $id; ?>"></h5>
+information you fill in, the narrower the search becomes.</h5>
+<input type="hidden" name="id" value="<?php echo $id; ?>">
+<input type="hidden" name="bid" value="<?php echo $bid; ?>">
 
 <fieldset>
 	<legend>BugTrack Assignment Search</legend>
@@ -49,7 +30,4 @@ information you fill in, the narrower the search becomes.
 	<div id="results"></div>
 	</fieldset>
 </form>
-<p><a href="#" onclick="close_win(window.opener.w);">Close window</a></p>
-<? require("footer.php"); ?>
-</body>
-</html>
+</div>

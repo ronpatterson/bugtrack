@@ -7,7 +7,8 @@
 $entry_id=12444; $ename="Ron Patterson";
 
 extract($_POST);
-$id = isset($id) ? intval($id) : "";
+//$id = isset($id) ? intval($id) : "";
+//print_r($_POST);
 if ($id == "") {
 	echo "<b>ID not provided</b>\n";
 	exit;
@@ -51,6 +52,7 @@ $bid="TBD";
 $wcomments="";
 $wl_public_y = " checked";
 $wl_public_n = "";
+$entry_dtm = date("m/d/Y g:i a");
 #$dvd_title = ereg_replace("\"","\\&quot;",$dvd_title);
 ?>
 <div class="bugform">

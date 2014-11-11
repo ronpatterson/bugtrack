@@ -21,12 +21,13 @@ $out = "";
 foreach ($recs as $rec)
 {
 	$active = $rec["active"] == "y" ? "Yes" : "No";
+	$roles = join($rec["roles"]);
     $out .= <<<END
 <tr>
 <td><a href="#" onclick="return bt.user_show(event,'{$rec["uid"]}');">{$rec["uid"]}</a></td>
 <td>{$rec["lname"]}, {$rec["fname"]}</td>
 <td>{$rec["email"]}</td>
-<td>{$rec["roles"]}</td>
+<td>{$roles}</td>
 <td>$active</td>
 </tr>
 END;

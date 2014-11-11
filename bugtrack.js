@@ -175,7 +175,7 @@ var bt = // setup the bt namespace
 		return false;
 	},
 
-	bugedit: function ( event, id )
+	bugedit: function ( event, id, bid )
 	{
 		//alert('bugedit '+id);
 		var params = "action=edit&id="+id;
@@ -185,7 +185,7 @@ var bt = // setup the bt namespace
 			function (response)
 			{
 				//$('#content_div').html(response);
-				bt.showDialog('BugTrack Edit '+id,response);
+				bt.showDialog('BugTrack Edit '+bid,response);
 				$('#errors').html('');
 	// 			$('#bdate').datepicker(
 	// 			{
@@ -200,7 +200,7 @@ var bt = // setup the bt namespace
 		return false;
 	},
 
-	bugshow: function ( event, id )
+	bugshow: function ( event, id, bid )
 	{
 		var params = "action=show&id="+id;
 		$.post(
@@ -209,7 +209,7 @@ var bt = // setup the bt namespace
 			function (response)
 			{
 				//$('#content_div').html(response);
-				bt.showDialog('BugTrack Entry '+id,response);
+				bt.showDialog('BugTrack Entry '+bid,response);
 			}
 		);
 		return false;
@@ -338,9 +338,37 @@ var bt = // setup the bt namespace
 			params,
 			function (response)
 			{
-				$('#content_div').html(response);
-				$('#bt_form3').submit(bt.workloghandler);
+				bt.showDialog('BugTrack Email',response);
 				$('#cancel3').click(bt.cancelDialog);
+			}
+		);
+		return false;
+	},
+
+	send_email: function ( )
+	{
+		//alert('userhandler');
+		var emailre = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,6})+$/;
+// 		var err = bt.validate();
+		var err = '';
+		if (emailre.test($('#sendto').val()))
+			err += ' - To Email is not valid<br>';
+		if ( $('#cc').val() != '' && emailre.test($('#cc').val()))
+			err += ' - CC Email is not valid<br>';
+		if (err != '')
+		{
+			$('#email_errors').html('Errors encountered:<br>'+err);
+			return false;
+		}
+		var params = "action=send_email";
+		params += '&'+$('#bt_email_form').serialize();
+		$.post(
+			URL,
+			params,
+			function (response)
+			{
+				bt.cancelDialog();
+				alert("Bug message sent.");
 			}
 		);
 		return false;
@@ -447,13 +475,51 @@ var bt = // setup the bt namespace
 		return false;
 	},
 	
-	assign_locate: function ( file )
+	assign_locate: function ( id, bid )
 	{
-		$.get(
-			file,
+		var params = "action=assign_search&id="+id+"&bid="+bid;
+		$.post(
+			URL,
+			params,
 			function (response)
 			{
-				bt.showDialog('BugTrack Maintenance',response);
+				bt.showDialog('BugTrack Assign',response);
+			}
+		);
+		return false;
+	},
+
+	assign_list: function ( event )
+	{
+		var params = "action=assign_list";
+		params += '&'+$('#bt_form9').serialize();
+		$.post(
+			URL,
+			params,
+			function (response)
+			{
+				$('#dialog-content').html(response);
+				$('#errors').html('');
+				$('#dialog-content table').dataTable({
+					"aaSorting": [[ 0, "asc" ]]
+					//"bJQueryUI": true,
+					//"sPaginationType": "full_numbers"
+				});
+			}
+		);
+		return false;
+	},
+	
+	do_assign: function (id, uname, bid) {
+		var params = "action=assign_user";
+		params += '&id='+id+'&uid='+uname;
+		$.post(
+			URL,
+			params,
+			function (response)
+			{
+				alert(response);
+				bt.bugshow(event,id,bid);
 			}
 		);
 		return false;

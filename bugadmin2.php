@@ -6,7 +6,7 @@ require("bugcommon.php");
 
 if (empty($rec))
 {
-	$rec = array("uid"=>"","lname"=>"","fname"=>"","email"=>"","active"=>"y","roles"=>"user","pw"=>"","bt_group"=>"");
+	$rec = array("uid"=>"","lname"=>"","fname"=>"","email"=>"","active"=>"y","roles"=>array("user"),"pw"=>"","bt_group"=>"","_id"=>"");
 }
 
 $dbh = $db->getHandle();
@@ -14,16 +14,18 @@ $uidx = $rec["uid"] == "" ? "<input type=\"text\" name=\"uid2\" value=\"\">" : $
 $active_y = $active_n = "";
 $active_y = $rec["active"] == "y" ? " checked" : "";
 $active_n = $rec["active"] != "y" ? " checked" : "";
-$roles = retradioarray("roles[]",$rarr,explode(" ", $rec["roles"]));
-$sql = "select cd,descr from bt_groups order by descr";
-$stmt = $dbh->query($sql);
-if (!$stmt) die("SQL ERROR: $sql, ".print_r($dbh->lastErrorMsg(),true));
+//$roles = retradioarray("roles[]",$rarr,explode(" ", $rec["roles"]));
+$roles = retradioarray("roles[]",$rarr,$rec["roles"]);
+$coll = $dbh->bt_groups->find(array(),array("cd"=>1,"descr"=>1))->sort(array("descr"=>1));
 $results = array();
-while ($row = $stmt->fetchArray())
+while ($coll->hasNext())
 {
+	$row = $coll->getNext();
 	$results[$row["cd"]] = $row["descr"];
 }
 $groups = retselectarray("bt_group",$results,$rec["bt_group"]);
+$oid = (string)$rec["_id"];
+//print_r($row);
 ?>
 <fieldset>
 <legend>User Add/Edit</legend>
@@ -40,5 +42,6 @@ $groups = retselectarray("bt_group",$results,$rec["bt_group"]);
 </table>
 <input type="submit" value="Save">
 <input type="hidden" name="uid" value="<?php echo $rec["uid"] ?>">
+<input type="hidden" name="oid" value="<?php echo $oid ?>">
 </form>
 </fieldset>

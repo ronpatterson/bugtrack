@@ -6,7 +6,7 @@
 extract($_POST);
 $ttl="Bug Delete";
 // delete contact record
-require("BugTrack.class.php");
+require("BugTrackMongo.class.php");
 $bug = new BugTrack();
 $bug->deleteBug($id);
 ?>

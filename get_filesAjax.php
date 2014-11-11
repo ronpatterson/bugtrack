@@ -14,7 +14,7 @@ $fileedit = 1;
 
 require("bugcommon.php");
 require("dbdef.php");
-require("BugTrack.class.php");
+require("BugTrackMongo.class.php");
 
 $bug = new BugTrack($dbpath);
 
@@ -25,7 +25,7 @@ if (count($rows) > 0)
 {
 	foreach ($rows as $row) {
 		list($aid, $fname, $size)=$row;
-		$files.="<a href='get_file.php?id=$aid' target='_blank'>$fname</a> (<a href='#' onclick='return remove_file($aid);'>Remove</a>) ($size)<br />";
+		$files.="<a href='get_file.php?id='".(string)$row["_id"]."' target='_blank'>{$row["fname"]}</a> (<a href='#' onclick='return remove_file('".(string)$row["_id"]."');'>Remove</a>) ({$row["size"]})<br />";
 	}
 }
 if ($files == "") $files = "None";

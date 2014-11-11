@@ -173,12 +173,13 @@ function delete_entry (id) {
 }
 
 
-function assign_locate (id) {
+//function assign_locate (id) {
 	//$('#errors').html('');
-	w = window.open('bugassign.php?id='+id, 'Assign', 'width=620,height=500,resizable,menubar,scrollbars');
+	//w = window.open('bugassign.php?id='+id, 'Assign', 'width=620,height=500,resizable,menubar,scrollbars');
 	//setTimeout("watch_add2(w)",2000);
-	return false;
-}
+//	bt.showDialog('Assignment',
+//	return false;
+//}
 
 function search_list (event) {
 	$('#results').html("Working...");
@@ -187,12 +188,12 @@ function search_list (event) {
 	return false;
 }
 
-function do_assign (bid, uname) {
-	$('#assignedDiv').html("Working...");
-	$('#assignedDiv').load('bugassign2Ajax.php', { bid: bid, uname: uname });
-	w.close();
-	return false;
-}
+// function do_assign (bid, uname) {
+// 	$('#assignedDiv').html("Working...");
+// 	$('#assignedDiv').load('bugassign2Ajax.php', { bid: bid, uname: uname });
+// 	w.close();
+// 	return false;
+// }
 
 function email_bug (id) {
 	//$('#errors').html('');

@@ -25,6 +25,7 @@ if (trim($bt_group) == "")
 if ($err != "") die("<pre>$err</pre>");
 
 if ($uid == "") {
+	$email = $_SESSION["user_id"];
 	$uid = $db->addUser($rec);
 	$msg = "Hello,
 
@@ -38,7 +39,8 @@ Name: $lname, $fname
 	$headers = "From: $from_email\r\nCC: $admin_emails,$email";
 	//mail($to,"BugTrack $uid2 user entry",stripcslashes($msg),$headers);
 } else {
-	$db->updateUser($uid,$rec);
+	$oid = $rec["oid"];
+	$db->updateUser($oid,$rec);
 	#$dvd_title = ereg_replace("\"","\\&quot;",$dvd_title);
 }
 //header("Location: bugshow1.php?id=$bid");

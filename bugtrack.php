@@ -9,7 +9,7 @@ require_once("btsession.php");
 // }
 // connect to the database 
 require_once("dbdef.php");
-require("BugTrack.class.php");
+require("BugTrackMongo.class.php");
 $db = new BugTrack($dbpath);
 $ttl = "BugTrack";
 $uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "";

@@ -29,7 +29,7 @@ if ($start == "") $start=0;
 $ttl="BugTrack Bugs List";
 $otype="open";
 $nextlink="";
-$crit = "";
+$crit = array();
 if ($type == "closed") {
 	$ttl="BugTrack Closed List";
 	$otype = "closed";
@@ -42,7 +42,8 @@ if ($type == "bytype") {
 		exit;
 	}
 	$stype=$arr[1];
-	$crit .= " and bug_type='$cd'";
+	//$crit .= " and bug_type='$cd'";
+	$crit["bug_type"] = $cd;
 	$ttl="BugTrack $type List";
 	$otype = "open";
 }
@@ -67,7 +68,8 @@ if ($type == "bypriority") {
 	$otype = "open";
 }
 if ($type == "assignments") {
-	$crit .= " and assigned_to='".$_SESSION['user_id']."'";
+	//$crit .= " and assigned_to='".$_SESSION['user_id']."'";
+	$crit["assigned_to"] = $_SESSION['user_id'];
 	#$uname=$_SESSION['uname'];
 	#$sql = "select id,lname,fname,nname,portal_role,emploc from metaman.d20_person where empnbr=$empnbr";
 	#$sth = $dbh->prepare($sql);
@@ -78,38 +80,41 @@ if ($type == "assignments") {
 	$otype = "open";
 }
 if ($type == "unassigned") {
-	$crit .= " and ifnull(assigned_to,'')=''";
+	//$crit .= " and ifnull(assigned_to,'')=''";
+	$crit["assigned_to"] = "";
 	$ttl="BugTrack Unassigned";
 	#$type = "open";
 	$otype = "open";
 }
 if ($type == "undefined" and substr($otype,0,1)=='o')
-	$crit .= " and status<>'c'";
+	//$crit .= " and status<>'c'";
+	$crit["status"] = array('$ne' => "c");
 elseif ($type == "assignments" or $type == "unassigned")
-	$crit .= " and status<>'c'";
+	//$crit .= " and status<>'c'";
+	$crit["status"] = array('$ne' => "c");
 else
-	$crit .= " and status='".substr($otype,0,1)."'";
+	//$crit .= " and status='".substr($otype,0,1)."'";
+	$crit["status"] = substr($otype,0,1);
+$cnt2 = 0; $out = "";
 // execute query 
-$sql = "select count(*) from bt_bugs where 1=1 $crit";
-//echo $sql;
-$count = $dbh->querySingle($sql);
-//echo $count;
-$cnt2=0; $out="";
-if ($count > 0) {
-	$sql = "select * from bt_bugs where 1=1 $crit order by bug_id desc -- limit $start,$max";
-	$stmt = $dbh->query($sql);
+$arrColls = $db->getBugs($crit,array("bug_id",-1));
+if (count($arrColls) > 0) {
 	// loop thru all rows
-    while ($arr = $stmt->fetchArray(SQLITE3_NUM)) {
-		list($id,$descr,$prod,$entry_id,$bug_type,$status,$priority,$comments,$solution,$assigned_to,$bug_id,$entry_dtm,$update_dtm,$closed_dtm) = $arr;
+	foreach ($arrColls as $arr) 
+	{
+//list($id,$descr,$prod,$entry_id,$bug_type,$status,$priority,$comments,$solution,$assigned_to,$bug_id,$entry_dtm,$update_dtm,$closed_dtm) = $arr;
 		//extract($arr);
-		$entry_dt = date("m/d/Y g:i a",strtotime($entry_dtm));
+		$entry_dt = date("m/d/Y g:i a",strtotime($arr["entry_dtm"]));
 		//$class = $count%2==0 ? "even" : "odd";
+		$id = (string)$arr["_id"];
+		$bid = $arr["bug_id"];
+		$edt = date("m/d/Y g:i a",$arr["entry_dtm"]->sec);
 		$out .= <<<END
 <tr valign="top">
-<td><a href="#" onclick="return bt.bugshow(null,$id);"><b>$bug_id</b></a></td>
-<td>$descr</td>
-<td>$entry_dt</td>
-<td>{$sarr[$status]}</td>
+<td><a href="#" onclick="return bt.bugshow(null,'$id','$bid');"><b>{$arr["bug_id"]}</b></a></td>
+<td>{$arr["descr"]}</td>
+<td>{$edt}</td>
+<td>{$sarr[$arr["status"]]}</td>
 </tr>
 END;
 		$cnt2++;

@@ -219,10 +219,13 @@ function get_loc ($dbh, $id) {
 // determine user info
 function get_user ($dbh, $uname) {
 //	global $UsersArr;
-	$sql = "select lname,fname,email from bt_users where uid='$uname'";
-	$stmt = $dbh->query($sql);
-	$arr = $stmt->fetchArray(SQLITE3_NUM);
-//	return explode(",", $UsersArr[$uname]);
+	$arr = $dbh->bt_users->findOne(array("uid"=>$uname),array("lname"=>1,"fname"=>1,"email"=>1));
+	$i = 0;
+	foreach ($arr as $k=>$item) {
+		if ($k == "_id") continue;
+	    $arr[$i] = $item;
+	    ++$i;
+	}
 	return $arr;
 }
 

@@ -3,14 +3,14 @@
 # Ron Patterson, WildDog Design
 #print_r($_SESSION);
 # return a standard <select> for a lookup table
-function retselect2 ($dbh, $name, $tab, $def) {
+function type_select ($db, $name, $def) {
 	$out = "<select name='$name' id='$name'><option value=' '>--Select one--\n<option value='0'>None\n";
-	$sql = "select * from $tab where active='y' order by descr";
-	$stmt = $dbh->query($sql);
-    while ($row = $stmt->fetchArray(SQLITE3_NUM)) {
-		list($cd,$descr,$active) = array($row[0],$row[1],$row[2]);
-		if ($cd == $def) $chk=" selected"; else $chk="";
-		$out .= "<option value='$cd|$descr'$chk>$descr\n";
+	$coll = $db->getHandle()->bt_type->find(array("active"=>"y"))->sort(array("descr"=>1));
+    while ($coll->hasNext()) 
+    {
+    	$row = $coll->getNext();
+		if ($row["cd"] == $def) $chk=" selected"; else $chk="";
+		$out .= "<option value='{$row["cd"]}|{$row["descr"]}'{$chk}>{$row["descr"]}</option>\n";
 	}
 	$out .= "</select>\n";
 	return $out;
@@ -78,7 +78,7 @@ if ($type == "closed") {
 // 	$otype = "open";
 // }
 $search=isset($_POST["search"]) ? $_POST["search"] : "";
-$btypes=retselect2($dbh,"bug_type","bt_type","");
+$btypes=type_select($db,"bug_type","");
 $stat=retselectarray('status',$sarr,"");
 ?>
 <form method="get" name="form1">

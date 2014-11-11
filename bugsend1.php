@@ -1,7 +1,7 @@
 <?php
 // bugsend1.php
 // Ron Patterson, WildDog Design
-// SQLite version
+// MongoDB version
 // connect to the database 
 require("bugcommon.php");
 $ttl="Send Record";
@@ -10,29 +10,34 @@ if (!isset($id)) $id = isset($_GET['id']) ? $_GET['id'] : "";
 if ($id == "") die("ERROR: No ID provided!");
 
 if (!isset($action) or $action == "") $action="form";
-$id = intval($id);
+//$id = intval($id);
+$uname = $_SESSION["user_id"];
 
 // execute query 
-$arr = $db->getBug($id,SQLITE3_NUM);
+$arr = $db->getBug($id);
 if (count($arr) == 0) die("ERROR: Bug not found ($id)");
-		list($id,$descr,$product,$btusernm,$bug_type,$status,$priority,$comments,$solution,$assigned_to,$bug_id,$entry_dtm,$update_dtm,$closed_dtm) = $arr;
+		//list($id,$descr,$product,$btusernm,$bug_type,$status,$priority,$comments,$solution,$assigned_to,$bug_id,$entry_dtm,$update_dtm,$closed_dtm) = $arr;
+extract($arr);
 $bt = $db->getBugTypeDescr($bug_type);
 $dbh = $db->getHandle();
-if ($btusernm != "") {
-	$arr = get_user($dbh,$btusernm);
-	$ename = "$arr[2] $arr[1]";
-	$email = $arr[3];
-} else $ename="";
+if ($user_nm != "") {
+	$arr = get_user($dbh,$user_nm);
+	$ename = "$arr[1] $arr[0]";
+	$email = $arr[2];
+} else {$ename=""; $email="";}
 if ($assigned_to != "") {
 	$arr = get_user($dbh,$assigned_to);
-	$aname = "$arr[2] $arr[1]";
-	$aemail = $arr[3];
-} else $aname="";
+	$aname = "$arr[1] $arr[0]";
+	$aemail = $arr[2];
+} else {$aname=""; $aemail="";}
 #$dvd_title = ereg_replace("\"","\\&quot;",$dvd_title);
-if ($action == "send") {
+if ($action == "send_email") {
 // 	$descr = stripcslashes($descr);
 // 	$comments = stripcslashes($comments);
 // 	$solution = stripcslashes($solution);
+	$edtm = $entry_dtm != "" ? date("m/d/Y g:i a",$entry_dtm->sec) : "";
+	$udtm = $update_dtm != "" ? date("m/d/Y g:i a",$update_dtm->sec) : "";
+	$cdtm = $closed_dtm != "" ? date("m/d/Y g:i a",$closed_dtm->sec) : "";
 	$msg = "$msg2
 	
 Details of Bug ID $bug_id.
@@ -57,14 +62,16 @@ Closed Date/Time: $cdtm
 ";
 	if (count($rows) > 0) {
 		foreach ($rows as $row) {
-			list($wid,$bid,$usernm,$comments,$entry_dtm,$edtm)=$row;
-			if ($usernm != "") {
-				$arr = get_user($dbh,$usernm);
+			//list($wid,$bid,$usernm,$comments,$entry_dtm,$edtm)=$row;
+			if ($row["user_nm"] != "")
+			{
+				$arr = get_user($dbh,$row["usernm"]);
 				$ename = "$arr[2] $arr[1]";
 			} else $ename="";
-			$comments = stripcslashes($comments);
+			$comments = stripcslashes($row["comments"]);
+			$edtm = date("m/d/Y g:i a",$row["entry_dtm"]->sec);
 			$msg .= "Date/Time: $edtm, By: $ename
-Comments: $comments
+Comments: {$row["comments"]}
 ";
 		}
 	}
@@ -76,10 +83,10 @@ Comments: $comments
 ?>
 <div class="bugform">
 <?php
-if ($action == "form"):
+if ($action == "email_bug"):
 ?>
-<form name="form1" method="post"><br>
-  <input type="hidden" name="action" value="send">
+<form name="form1" id="bt_email_form" method="post" onsubmit="javascript:return bt.send_email();"><br>
+  <input type="hidden" name="action2" value="send_email">
   <input type="hidden" name="id" value="<?php echo $id; ?>">
   <input type="hidden" name="bug_id" value="<?php echo $bug_id; ?>">
   <input type="hidden" name="uname" value="<?php echo $uname; ?>">
@@ -100,17 +107,12 @@ if ($action == "form"):
  		<label>&nbsp;</label>
         <div class="fields2"><input type="submit" value="Send Bug Message"> <input
  type="reset"></div><br class="clear">
+ 		<div id="email_errors"></div>
 	</fieldset>
   <br>
 </form>
 <?php
 else:
-?>
-<script type="text/javascript">
-	alert("Bug message sent.");
-</script>
-<?php
 	exit;
 endif;
 ?>
-<p><a href="#" onclick="window.opener.w.close();">Close window</a></p>

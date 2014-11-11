@@ -9,7 +9,8 @@ require_once("btsession.php");
 // }
 // connect to the database 
 require_once("dbdef.php");
-require("BugTrack.class.php");
+//require("BugTrack.class.php");
+require("BugTrackMongo.class.php");
 $db = new BugTrack($dbpath);
 
 $args = $_POST;
@@ -58,6 +59,7 @@ switch ($args["action"])
 		echo file_get_contents($args["file"]);
 		break;
 	case "email_bug":
+	case "send_email":
 		require_once("bugsend1.php");
 		break;
 	case "admin":
@@ -71,7 +73,7 @@ switch ($args["action"])
 		if ($args["uid"] != "")
 		{
 			$recs = $db->getUserRec($args["uid"]);
-			$rec = $recs[0];
+			$rec = $recs;
 		}
 		else
 		{
@@ -84,6 +86,16 @@ switch ($args["action"])
 		break;
 	case "help":
 		require_once("bughelp.php");
+		break;
+	case "assign_search":
+		require_once("bugassign.php");
+		break;
+	case "assign_list":
+		require_once("bugassign1.php");
+		break;
+	case "assign_user":
+		$recs = $db->assign_user($args["id"],$args["uid"]);
+		echo $recs;
 		break;
 	default:
 		die("ERROR: Unknown arguments, ".print_r($args,1));

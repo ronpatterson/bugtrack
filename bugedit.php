@@ -1,19 +1,31 @@
 <?php
 // bugedit.php
 // Ron Patterson, WildDog Design
-// SQLite version
+// MongoDB version
 #require("btsession.php");
 #print_r($_SESSION);
 
 # return a standard <select> for a lookup table
-function retselect2 ($dbh, $name, $tab, $def) {
-	$out = "<select name='$name' id='$name'><option value=' '>--Select one--\n<option value='0'>None</option>\n";
-	$sql = "select * from $tab where active='y' order by descr";
-	$stmt = $dbh->query($sql);
-    while ($row = $stmt->fetchArray(SQLITE3_NUM)) {
-		list($cd,$descr,$active) = array($row[0],$row[1],$row[2]);
-		if ($cd == $def) $chk=" selected"; else $chk="";
-		$out .= "<option value='$cd'$chk>$descr</option>\n";
+function type_select ($db, $name, $def) {
+	$out = "<select name='$name' id='$name'><option value=' '>--Select one--\n<option value='0'>None\n";
+	$coll = $db->getHandle()->bt_type->find(array("active"=>"y"))->sort(array("descr"=>1));
+    while ($coll->hasNext()) 
+    {
+    	$row = $coll->getNext();
+		if ($row["cd"] == $def) $chk=" selected"; else $chk="";
+		$out .= "<option value='{$row["cd"]}|{$row["descr"]}'{$chk}>{$row["descr"]}</option>\n";
+	}
+	$out .= "</select>\n";
+	return $out;
+}
+function group_select ($db, $name, $def) {
+	$out = "<select name='$name' id='$name'><option value=' '>--Select one--\n<option value='0'>None\n";
+	$coll = $db->getHandle()->bt_groups->find(array("active"=>"y"))->sort(array("descr"=>1));
+    while ($coll->hasNext()) 
+    {
+    	$row = $coll->getNext();
+		if ($row["cd"] == $def) $chk=" selected"; else $chk="";
+		$out .= "<option value='{$row["cd"]}|{$row["descr"]}'{$chk}>{$row["descr"]}</option>\n";
 	}
 	$out .= "</select>\n";
 	return $out;
@@ -34,9 +46,10 @@ $email = $_SESSION["email"];
 #require("myhead1.php");
 $action = "change";
 extract($_POST);
-$id = isset($id) ? intval($id) : "";
-if ($id == "") {
+//$id = isset($id) ? intval($id) : "";
+if (!isset($id) || $id == "") {
 	$action="add";
+	$id = "";
 }
 if ($action == "add") {
 	$but1="Add new Bug entry";
@@ -78,9 +91,9 @@ if ($action == "add") {
 	$product = stripslashes($product);
 	$comments = stripslashes($comments);
 	$solution = stripslashes($solution);
-	$edtm = $entry_dtm != "" ? date("m/d/Y g:i a",strtotime($entry_dtm)) : "";
-	$udtm = $update_dtm != "" ? date("m/d/Y g:i a",strtotime($update_dtm)) : "";
-	$cdtm = $closed_dtm != "" ? date("m/d/Y g:i a",strtotime($closed_dtm)) : "";
+	$edtm = $entry_dtm != "" ? date("m/d/Y g:i a",$entry_dtm->sec) : "";
+	$udtm = $update_dtm != "" ? date("m/d/Y g:i a",$update_dtm->sec) : "";
+	$cdtm = $closed_dtm != "" ? date("m/d/Y g:i a",$closed_dtm->sec) : "";
 	/*
 	$descr = htmlentities($descr);
 	$product = htmlentities($product);
@@ -115,8 +128,8 @@ if ($action == "add") {
 	}
 */
 }
-$grp=retselect2($dbh,"group","bt_groups",$group);
-$btypes=retselect2($dbh,"bug_type","bt_type",$bug_type);
+$grp=group_select($db,"group",$group);
+$btypes=type_select($db,"bug_type",$bug_type);
 $pri=retselectarray('priority',$parr,$priority);
 //$grp=retselectarray('group',$grparr,$group);
 ?>
@@ -173,5 +186,5 @@ $pri=retselectarray('priority',$parr,$priority);
 </form>
 </div>
 <?php if ($action == "change"): ?>
-<script type="text/javascript">get_files(<?php echo $id ?>);</script>
+<script type="text/javascript">get_files('<?php echo $id ?>');</script>
 <?php endif; ?>

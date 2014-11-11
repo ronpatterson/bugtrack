@@ -1,11 +1,12 @@
 <?php
 // bugshow1.php
 // Ron Patterson, WildDog Design
-// SQLite version
+// MongoDB version
 ini_set("display_errors", "1");
 require("bugcommon.php");
 
-$id = isset($_POST['id']) ? intval($_POST['id']) : "";
+//$id = isset($_POST['id']) ? intval($_POST['id']) : "";
+$id = $_POST['id'];
 if ($id == "") {
 	echo "<b>No ID provided</b>\n";
 	exit;
@@ -13,44 +14,48 @@ if ($id == "") {
 
 $ttl="Show Record";
 // execute query 
-$arr = $db->getBug($id,SQLITE3_NUM);
-if (count($arr) == 0) die("ERROR: Bug not found ($id)");
-		list($id,$descr,$product,$btusernm,$bug_type,$status,$priority,$comments,$solution,$assigned_to,$bug_id,$entry_dtm,$update_dtm,$closed_dtm) = $arr;
-$descr = stripslashes($descr);
-$product = stripslashes($product);
-$comments = stripslashes($comments);
-$solution = stripslashes($solution);
-$edtm = $entry_dtm != "" ? date("m/d/Y g:i a",strtotime($entry_dtm)) : "";
-$udtm = $update_dtm != "" ? date("m/d/Y g:i a",strtotime($update_dtm)) : "";
-$cdtm = $closed_dtm != "" ? date("m/d/Y g:i a",strtotime($closed_dtm)) : "";
-$bt = $db->getBugTypeDescr($bug_type);
+$arr = $db->getBug($id);
+if (empty($arr)) die("ERROR: Bug not found ($id)");
+		//list($id,$descr,$product,$btusernm,$bug_type,$status,$priority,$comments,$solution,$assigned_to,$bug_id,$entry_dtm,$update_dtm,$closed_dtm) = $arr;
+$descr = stripslashes($arr["descr"]);
+$product = stripslashes($arr["product"]);
+$comments = stripslashes($arr["comments"]);
+$solution = stripslashes($arr["solution"]);
+$user_nm = $arr["user_nm"];
+$assigned_to = $arr["assigned_to"];
+$edtm = $arr["entry_dtm"] != "" ? date("m/d/Y g:i a",$arr["entry_dtm"]->sec) : "";
+$udtm = $arr["update_dtm"] != "" ? date("m/d/Y g:i a",$arr["update_dtm"]->sec) : "";
+$cdtm = $arr["closed_dtm"] != "" ? date("m/d/Y g:i a",$arr["closed_dtm"]->sec) : "";
+$bt = $db->getBugTypeDescr($arr["bug_type"]);
 # attachments are now in the db
 $files="";
 $rows = $db->getBugAttachments($id);
 if (count($rows) > 0) {
 	foreach ($rows as $row) {
 		list($aid,$fname,$size)=$row;
-		$files.="<a href='get_file.php?id=$aid' target='_blank'>$fname</a> ($size)<br>";
+		$files.="<a href='get_file.php?id=".(string)$row["_id"]."' target='_blank'>{$row["fname"]}</a> ({$row["size"]})<br>";
 	}
 }
 $dbh = $db->getHandle();
-if ($btusernm != "") {
-	$arr = get_user($dbh,$btusernm);
-	$ename = "$arr[1] $arr[0]";
-	$email = $arr[2];
-} else $ename="";
-if ($assigned_to != "") {
-	$arr = get_user($dbh,$assigned_to);
-	$aname = "$arr[1] $arr[0]";
-	$aemail = $arr[2];
+$ename = ""; $email = "";
+if (isset($user_nm) and $user_nm != "") {
+	$arr2 = get_user($dbh,$user_nm);
+	$ename = "$arr2[1] $arr2[0]";
+	$email = $arr2[2];
+};
+$aname = ""; $aemail = "";
+if (isset($assigned_to) and $assigned_to != "") {
+	$arr2 = get_user($dbh,$assigned_to);
+	$aname = "$arr2[1] $arr2[0]";
+	$aemail = $arr2[2];
 } else $aname="";
 $alink = ""; $elink = "";
 //if (ereg($_SESSION["uname"],AUSERS)) {
 //	$alink = "<a href='#' onclick='return bt.assign_locate(\"bugassign.php?id=$id\")'>Assign</a>";
-	$alink = "<a href='#' onclick='return assign_locate($id)'>Assign</a>";
+	$alink = "<a href='#' onclick='return bt.assign_locate(\"$id\",\"{$arr["bug_id"]}\");'>Assign</a>";
 	$elink = <<<END
-<a href="#" onclick="return bt.bugedit(event,$id);">Edit record</a>
--- <a href="#" onclick="return delete_entry($id);">Delete</a> --
+<a href="#" onclick="return bt.bugedit(event,'$id','{$arr["bug_id"]}');">Edit record</a>
+-- <a href="#" onclick="return delete_entry('$id','{$arr["bug_id"]}');">Delete</a> --
 END;
 //}
 /*
@@ -93,21 +98,21 @@ if ($type == "unassigned") {
 <fieldset>
 	<legend>BugTrack Record</legend>
 	<label>ID:</label>
-	<div class="fields2"><?php echo $bug_id; ?></div><br class="clear">
+	<div class="fields2"><?php echo $arr["bug_id"]; ?></div><br class="clear">
 	<label>Description:</label>
-	<div class="fields2"><?php echo $descr; ?></div><br class="clear">
+	<div class="fields2"><?php echo $arr["descr"]; ?></div><br class="clear">
 	<label>Product or Application:</label>
-	<div class="fields2"><?php echo $product; ?></div><br class="clear">
+	<div class="fields2"><?php echo $arr["product"]; ?></div><br class="clear">
 	<label>Bug Type:</label>
 	<div class="fields2"><?php echo $bt; ?></div><br class="clear">
 	<label>Status:</label>
-	<div class="fields2"><?php echo $sarr[$status]; ?></div><br class="clear">
+	<div class="fields2"><?php echo $sarr[$arr["status"]]; ?></div><br class="clear">
 	<label>Priority:</label>
-	<div class="fields2"><?php echo $parr[$priority]; ?></div><br class="clear">
+	<div class="fields2"><?php echo $parr[$arr["priority"]]; ?></div><br class="clear">
 	<label>Comments:</label>
-	<div class="fields2"><?php echo nl2br(addlinks($comments)); ?></div><br class="clear">
+	<div class="fields2"><?php echo nl2br(addlinks($arr["comments"])); ?></div><br class="clear">
 	<label>Solution:</label>
-	<div class="fields2"><?php echo nl2br(addlinks($solution)); ?></div><br class="clear">
+	<div class="fields2"><?php echo nl2br(addlinks($arr["solution"])); ?></div><br class="clear">
 	<label>Attachments:</label>
 	<div class="fields2"><div id="filesDiv"><?php echo $files; ?></div></div><br class="clear">
 	<label>Entry By:</label>
@@ -124,32 +129,31 @@ if ($type == "unassigned") {
 <p align="center">
 <?php echo $elink ?>
 <a href="bt.buglist.php?<?php echo $nextlink; ?>">Show list</a>
--- <a href="#" onclick="return bt.email_bug(<?php echo $id; ?>);">Email Bug</a>
+-- <a href="#" onclick="return bt.email_bug('<?php echo $id; ?>');">Email Bug</a>
 </p>
 <div id="worklogDiv">
 <?php
-$rows = $db->getWorkLogEntries($id);
+$rows = $db->getWorkLogEntries($arr["bug_id"]);
 $count = count($rows);
-echo "<p align='center'>$count Worklog entries found -- <a href='#' onclick='return bt.add_worklog(event,$id);'>Add</a><p>\n";
+echo "<p align='center'>$count Worklog entries found -- <a href='#' onclick='return bt.add_worklog(event,\"$id\");'>Add</a><p>\n";
 if ($count > 0):
 ?>
 <table border="1" cellspacing="0" cellpadding="3" class="worklog">
 <?php
 	foreach ($rows as $row) {
-		$email = "";
-		list($wid,$bid,$btusernm,$comments,$entry_dtm)=$row;
-		if ($btusernm != "") {
-			$arr = get_user($dbh,$btusernm);
+		//list($wid,$bid,$btusernm,$comments,$entry_dtm)=$row;
+		if ($row["user_nm"] != "") {
+			$arr = get_user($dbh,$row["user_nm"]);
 			$ename = "$arr[1] $arr[0]";
 			$email = $arr[2];
-		} else $ename="";
+		} else {$ename=""; $email="";}
 ?>
-<tr><td><b>Date/Time: <?php echo date("m/d/Y g:i a",strtotime($entry_dtm)); ?>, By: <a href="mailto:<?php echo $email ?>"><?php echo $ename; ?></a></b></td></tr>
-<tr><td cellspan="2"><?php echo nl2br(addlinks($comments)); ?></td></tr>
+<tr><td><b>Date/Time: <?php echo date("m/d/Y g:i a",$row["entry_dtm"]->sec); ?>, By: <a href="mailto:<?php echo $email ?>"><?php echo $ename; ?></a></b></td></tr>
+<tr><td cellspan="2"><?php echo nl2br(addlinks($row["comments"])); ?></td></tr>
 <?php
 	}
 endif;
 ?>
 </table>
 </div>
-<script type="text/javascript">get_files(<?php echo $id ?>);</script>
+<script type="text/javascript">get_files('<?php echo $id ?>');</script>

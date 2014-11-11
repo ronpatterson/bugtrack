@@ -1,43 +1,36 @@
 <?php
-require("btsession.php");
 // bugassign1.php - Directory staff search results
 // Ron Patterson, WildDog Design
-// SQLite version
+// MongoDB version
 require("bugcommon.php");
 extract($_POST);
 #print_r($_POST); exit;
 
 if ($fname == " " && $lname == "") die("No search data entered!!");
 
-$bid=$id;
-$lname = slashem($lname);
-$fname = slashem($fname);
+$bid2=$id;
+$lname1 = slashem($lname);
+$fname1 = slashem($fname);
 
-// connect to the database 
-require_once("dbdef.php");
-require("BugTrack.class.php");
-$db = new BugTrack($dbpath);
 $dbh = $db->getHandle();
 //reset($UsersArr);
 $list = ""; $found = 0;
-$sql = "select * from bt_users where active='y' order by lname,fname";
-$stmt = $dbh->query($sql);
-if (!$stmt) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
-//foreach ($UsersArr as $k=>$v) {
-while ($arr = $stmt->fetchArray(SQLITE3_NUM))
+//$crit = array("active"=>"y");
+//$coll = $dbh->bt_users->find($crit)->sort(array("lname"=>1,"fname"=>1));
+$results = $db->getUserEntries();
+foreach ($results as $arr)
 {
-	//list($uid,$lnm,$fnm,$email) = preg_split("/,/",$v);
-	list($uid,$lnm,$fnm,$email,$act) = $arr;
-	if ((trim($lname) != "" and preg_match("/".$lname."/i",$lnm)) or (trim($fname) != "" and preg_match("/".$fname."/i",$fnm))) {
-		$list .= <<<END
+	extract($arr);
+	echo $lname1.$fname1;
+	if ((trim($lname1) != "" and !preg_match("/".$lname1."/i",$lname)) or (trim($fname1) != "" and !preg_match("/".$fname1."/i",$fname))) continue;
+	$list .= <<<END
   <tr>
-    <td valign="TOP" height="16"><a href="#" onclick="return opener.do_assign($bid,'$uid');">$lnm, $fnm</a></td> 
+    <td valign="TOP" height="16"><a href="#" onclick="return bt.do_assign('$bid2','$uid','$bid');">$lname, $fname</a></td> 
     <td valign="TOP" height="16">$uid</td> 
     <td valign="TOP" height="16">$email</td> 
   </tr>
 END;
 	++$found;
-	}
 }
 ?>
 <h5>Your search found <?php echo $found; ?> listing(s). Click

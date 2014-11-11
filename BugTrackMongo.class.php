@@ -25,11 +25,11 @@ class BugTrack {
 	public function __construct ( $dbpath )
 	{
 		// MongoDB database version
-		die($dbpath);
 		try
 		{
-			$this->mdb = new MongoClient($dbpath);
+			$this->mdb = new Mongo($dbpath);
 			$this->db = $this->mdb->bugtrack;
+			//var_dump($this->db);
 		}
 		catch (Exception $e)
 		{
@@ -41,7 +41,7 @@ class BugTrack {
 	
 	public function __destruct ()
 	{
-		$this->mdb->close();
+		//$this->mdb->close();
 		$this->mdb = null;
 	}
 	
@@ -86,15 +86,16 @@ END;
 	public function getBug ($id)
 	{
 		// id, descr, product, user_nm, bug_type, status, priority, comments, solution, assigned_to, bug_id, entry_dtm, update_dtm, closed_dtm
-		$results = $this->db->bt_bugs->findOne(array("id"=>intval($id)));
-		if (empty($results) == 0) return array(); // empty record!
+		$results = $this->db->bt_bugs->findOne(array("_id"=>new MongoId($id)));
+		if (empty($results)) return array(); // empty record!
 		//$results["entry_dtm"] = date("m/d/Y g:m a",$results["entry_dtm"]->sec);
 		return $results;
 	}
 
-	public function getBugs ($crit = "", $order = "")
+	public function getBugs ($crit = array(), $order = array())
 	{
 		if (empty($crit)) $crit = array();
+		$results = array();
 		$coll = $this->db->bt_bugs->find($crit)->sort($order);
 		while ($coll->hasNext())
 		{
@@ -105,15 +106,16 @@ END;
 	
 	private function getNextSequence ($name) {
 		$ret = $this->db->counters->findAndModify (
+			array( "_id" => $name ),
+			array( '$inc' => array( 'seq' => 1 ) ),
+			null,
 			array(
-			"query" => array( "_id" => $name ),
-			"update" => array( '$inc' => array( 'seq' => 1 ) ),
-			"new" => true,
-			"upsert" => true
+				"new" => true,
+				"upsert" => true
 			)
-	   );
+		);
 
-	   return $ret["seq"];
+		return $ret["seq"];
 	}
 
 	// rec = record array
@@ -122,25 +124,31 @@ END;
 		extract($rec);
 		//error_log("rec=".print_r($rec,1));
 		$bid = $this->getNextSequence("bug_id");
+		$arr = explode("|",$group);
+		$group = $arr[0];
 		$bug_id="$group$bid";
+		$iid = new MongoId(); // generate a _id
 		$arrTemp = array(
-  "bug_id" => $bug_id
+  "_id" => $iid
+, "bug_id" => $bug_id
 , "descr" => $descr
 , "product" => $product
 , "user_nm" => $user_nm
-, "bug_type" => $bug_type
+, "bug_type" => substr($bug_type,0,1)
 , "status" => $status
 , "priority" => $priority
 , "comments" => $comments
 , "solution" => $solution
 , "assigned_to" => $assigned_to
-, "entry_dtm" => MongoDate()
+, "entry_dtm" => new MongoDate()
+, "update_dtm" => null
 , "closed_dtm" => null
 );
 		$res = $this->db->bt_bugs->insert($arrTemp);
-		$count = $res["n"];
-		if ($count == 0) die("ERROR: Record not added! $sql");
-		return (string)$arrTemp["_id"];
+		//var_dump($res);
+		//$count = $res["n"];
+		if (!$res) die("ERROR: Record not added! $sql");
+		return $iid.",".$bug_id;
 	}
 
 	// idx = record index
@@ -162,9 +170,9 @@ END;
 );
 		if ($closed)
 			$arrTemp["closed_dtm"] = new MongoDate();
-		$res = $this->db->bt_bugs->update(array("_id"=>$idx),array('$set'=>$arrTemp));
-		$count = $res["n"];
-		if ($count == 0) die("ERROR: Record not updated! $sql");
+		$res = $this->db->bt_bugs->update(array("_id"=>new MongoId($idx)),array('$set'=>$arrTemp));
+		//$count = $res["n"];
+		if (!$res) die("ERROR: Record not updated!");
 	}
 
 	public function deleteBug ($id)
@@ -182,15 +190,14 @@ END;
 		extract($rec);
 		$arrTemp = array(
   "bug_id" => $bug_id
-, "user_nm" => $user_nm
+, "user_nm" => $usernm
 , "comments" => $comments
 , "wl_public" => $wl_public
 , "entry_dtm" => new MongoDate()
 );
 		$res = $this->db->bt_worklog->insert($arrTemp);
-		$count = $res["n"];
-		if ($count == 0) die("ERROR: Record not added! $sql");
-		return (string)$arrTemp["_id"];
+		if (!$res) die("ERROR: Record not added! $sql");
+		return 1;
 	}
 
 	// idx = record index
@@ -199,11 +206,11 @@ END;
 	{
 		extract($rec);
 		$arrTemp = array(
-  "user_nm" => $user_nm
+  "user_nm" => $usernm
 , "comments" => $comments
 , "wl_public" => $wl_public
 );
-		$res = $this->db->bt_bugs->update(array("_id"=>$idx),array('$set'=>$arrTemp));
+		$res = $this->db->bt_bugs->update(array("_id"=>new MongoId($idx)),array('$set'=>$arrTemp));
 		$count = $res["n"];
 		if ($count == 0) die("ERROR: Record not updated! $sql");
 	}
@@ -211,11 +218,12 @@ END;
 	public function getBugTypeDescr ($bug_type)
 	{
 		$descr = $this->db->bt_type->findOne(array("cd"=>$bug_type),array("descr"=>1));
-		return $descr;
+		return $descr["descr"];
 	}
 
 	public function getWorkLogEntries ($id)
 	{
+		$results = array();
 		$coll = $this->db->bt_worklog->find(array("bug_id"=>$id));
 		while ($coll->hasNext())
 		{
@@ -224,33 +232,18 @@ END;
 		return $results;
 	}
 
-	public function getBugAttachment ($id, $type = SQLITE3_ASSOC)
+	public function getBugAttachment ($id)
 	{
-		$sql = "select count(*) from bt_attachments where id=".intval($id);
-		$found = $this->dbh->querySingle($sql);
-		if ($found == 0) return array(); // empty record!
-		$sql = "select * from bt_attachments where id=".intval($id);
-		$stmt = $this->dbh->query($sql);
-		if (!$stmt) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
-		$results = array();
-		while ($row = $stmt->fetchArray($type))
-		{
-			$results[] = $row;
-		}
-		return $results;
+		$result = $this->db->bt_attachments->findOne(array("_id"=>new MongoId($id)));
+		return $result;
 	}
 
 	public function getBugAttachments ($id) {
-		$sql = "select count(*) from bt_attachments where bug_id=".intval($id);
-		$found = $this->dbh->querySingle($sql);
-		if ($found == 0) return array(); // empty record!
-		$sql = "select id,file_name,file_size from bt_attachments where bug_id=".intval($id);
-		$stmt = $this->dbh->query($sql);
-		if (!$stmt) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$results = array();
-		while ($row = $stmt->fetchArray())
+		$coll = $this->db->bt_attachments->find(array("bug_id"=>$id));
+		while ($coll->hasNext())
 		{
-			$results[] = $row;
+			$results[] = $coll->getNext();
 		}
 		return $results;
 	}
@@ -262,16 +255,14 @@ END;
 		//extract($rec);
 		//$hash = md5($id.$filename.date("YmdHis"));
 		$hash = md5($raw_file);
-		$sql  = "insert into bt_attachments (bug_id, file_name, file_size, file_hash, entry_dtm) values (?,?,?,?,datetime('now'))";
-		$stmt = $this->dbh->prepare($sql);
-		$params = array(intval($id),$filename,$size." Bytes",$hash);
-		#echo $sql;
-		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
-		$result = $stmt->execute();
-		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
-// 		$count = $this->dbh->changes();
-// 		if ($count == 0) die("ERROR: Record not added! $sql");
-		$id = $this->dbh->lastInsertRowID();
+		$arrTemp = array(
+  "bug_id" => $bug_id
+, "file_name" => $file_name
+, "file_size" => $file_size
+, "file_hash" => $file_hash
+, "entry_dtm" => new MongoDate()
+);
+		$res = $this->db->bt_attachments->insert($arrTemp);
 		$pdir = substr($hash,0,2);
 		if (!file_exists($this->adir.$pdir))
 		{
@@ -281,22 +272,21 @@ END;
 		fwrite($fp,$raw_file);
 		fclose($fp);
 		
-		return $id;
+		return 1;
 	}
 
 	public function deleteAttachment ($id)
 	{
-		$sql = "select file_hash from bt_attachments where id=".intval($id);
-		$hash = $this->dbh->querySingle($sql);
-		$sql = "select count(*) from bt_attachments where file_hash=(select file_hash from bt_attachments where id=".intval($id).")";
-		$count = $this->dbh->querySingle($sql);
-		$sql = "delete from bt_attachments where id=".intval($id);
-		$count2 = $this->dbh->exec($sql);
-		if (!$count2) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
-		if ($count == 1)
+		$result = $this->db->bt_attachments->findOne(array("_id"=>new MongoId($id)),array("file_hash"=>1));
+		if (!empty($result))
 		{
-			$pdir = substr($hash,0,2);
-			unlink($this->adir.$pdir."/".$hash);
+			$hash = $result["file_hash"];
+			$res = $this->db->bt_bugs.remove(array("_id" => $id));
+			if ($res)
+			{
+				$pdir = substr($hash,0,2);
+				unlink($this->adir.$pdir."/".$hash);
+			}
 		}
 	}
 
@@ -321,7 +311,7 @@ END;
 	// rec = record array
 	public function addUser ($rec)
 	{
-		// uid, lname, fname, email, active, roles
+		// uid, lname, fname, email, active, roles, pw, bt_group
 		extract($rec);
 		$pw5 = md5($pw);
 		//$roles = join(" ",$roles);
@@ -336,14 +326,15 @@ END;
 , "bt_group" => $bt_group
 );
 		$res = $this->db->bt_users->insert($arrTemp);
-		$count = $res["n"];
-		if ($count == 0) die("ERROR: Record not added! $sql");
-		return (string)$arrTemp["_id"];
+		//var_dump($res);
+		//$count = $res["n"];
+		if (!$res) die("ERROR: Record not added!");
+		return 1;
 	}
 
 	// uid = record key
 	// rec = record array
-	public function updateUser ($uid, $rec)
+	public function updateUser ($oid, $rec)
 	{
 		extract($rec);
 		if ($pw == $pw2) $pw5 = $pw;
@@ -358,9 +349,20 @@ END;
 , "pw" => $pw5
 , "bt_group" => $bt_group
 );
-		$res = $this->db->bt_users->update(array("uid"=>$uid),array('$set'=>$arrTemp));
-		$count = $res["n"];
-		if ($count == 0) die("ERROR: Record not updated! $sql");
+		$res = $this->db->bt_users->update(array("_id"=>new MongoId($oid)),array('$set'=>$arrTemp));
+		//var_dump($res);
+		//$count = $res["n"];
+		if (!$res) die("ERROR: Record not updated!");
+	}
+	
+	public function assign_user ($id, $uid)
+	{
+		$arrTemp = array(
+  "assigned_to" => $uid
+, "update_dtm" => new MongoDate()
+);
+		$this->db->bt_bugs->update(array("_id"=>new MongoId($id)),array('$set'=>$arrTemp));
+		return "Assignment done";
 	}
 	
 	public function get_admin_emails ()
@@ -391,16 +393,17 @@ END;
 		$results = array();
 		$row = $this->db->bt_users->findOne(array('uid'=>$uid,'pw'=>md5($pw)));
 		if (empty($row)) die("FAIL");
+		$_SESSION["user_id"] = $uid;
 		$_SESSION["user_nm"] = $row["fname"]." ".$row["lname"];
 		$_SESSION["email"] = $row["email"];
-		$_SESSION["roles"] = $row["roles"];
+		$_SESSION["roles"] = join(",",$row["roles"]);
 		$_SESSION["group"] = $row["bt_group"];
 		echo json_encode($row);
 	}
 
 	public function getHandle ()
 	{
-		return $this->mdb;
+		return $this->db;
 	}
 
 	public function getAdir ()

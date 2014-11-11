@@ -30,7 +30,9 @@ if ($err != "") {
 // $solution = slashem($solution);
 $admin_emails = $db->get_admin_emails();
 if ($action2 == "add") {
-	$bid = $db->addBug($rec);
+	$result = $db->addBug($rec);
+	$arr = explode(",", $result);
+	list($id,$bid) = $arr;
 // 	$descr = stripcslashes($descr);
 // 	$comments = stripcslashes($comments);
 	$headers = "From: $from_email\r\nCC: $admin_emails";
