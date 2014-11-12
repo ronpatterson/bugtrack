@@ -18,14 +18,15 @@ require("BugTrackMongo.class.php");
 
 $bug = new BugTrack($dbpath);
 
+$id = $_REQUEST["id"];
 # attachments are now in the db
 $files="";
 $rows = $bug->getBugAttachments($id);
 if (count($rows) > 0)
 {
 	foreach ($rows as $row) {
-		list($aid, $fname, $size)=$row;
-		$files.="<a href='get_file.php?id='".(string)$row["_id"]."' target='_blank'>{$row["fname"]}</a> (<a href='#' onclick='return remove_file('".(string)$row["_id"]."');'>Remove</a>) ({$row["size"]})<br />";
+		//list($aid, $fname, $size)=$row;
+		$files.="<a href='get_file.php?id=".(string)$row["_id"]."' target='_blank'>{$row["file_name"]}</a> (<a href='#' onclick='return remove_file(\"".(string)$row["_id"]."\");'>Remove</a>) ({$row["file_size"]})<br />";
 	}
 }
 if ($files == "") $files = "None";

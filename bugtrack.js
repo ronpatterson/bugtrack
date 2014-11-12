@@ -11,13 +11,14 @@ var bt = // setup the bt namespace
 
 	check_session: function (event)
 	{
+		alert("check_session called");
 		var params = "action=bt_check_session";
 		$.post(
 			URL,
 			params,
 			function (response)
 			{
-				if (response == 0)
+				if (response != 1)
 				{
 					if (stimer != 0) window.clearInterval(stimer);
 					stimer = 0;
@@ -26,6 +27,7 @@ var bt = // setup the bt namespace
 				else
 				{
 					$('#bt_user_heading').show();
+					stimer = window.setTimeout(bt.check_session,300000);
 				}
 			}
 		);
@@ -86,7 +88,7 @@ var bt = // setup the bt namespace
 // 					$('body').append(user);
 					$('#bt_user_name_top').html(row.fname+' '+row.lname);
 					$('#bt_user_heading').show();
-					stimer = window.setInterval(bt.check_session,300000);
+					stimer = window.setTimeout(bt.check_session,300000);
 				}
 			}
 		);

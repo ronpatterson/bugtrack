@@ -29,11 +29,11 @@ $cdtm = $arr["closed_dtm"] != "" ? date("m/d/Y g:i a",$arr["closed_dtm"]->sec) :
 $bt = $db->getBugTypeDescr($arr["bug_type"]);
 # attachments are now in the db
 $files="";
-$rows = $db->getBugAttachments($id);
+$rows = $db->getBugAttachments($arr["bug_id"]);
 if (count($rows) > 0) {
 	foreach ($rows as $row) {
-		list($aid,$fname,$size)=$row;
-		$files.="<a href='get_file.php?id=".(string)$row["_id"]."' target='_blank'>{$row["fname"]}</a> ({$row["size"]})<br>";
+		//list($aid,$fname,$size)=$row;
+		$files.="<a href='get_file.php?id=".$row["bug_id"]."' target='_blank'>{$row["file_name"]}</a> ({$row["file_size"]})<br>";
 	}
 }
 $dbh = $db->getHandle();
@@ -94,6 +94,7 @@ if ($type == "unassigned") {
 <input type="hidden" name="update_list" id="update_list" value="0">
 <input type="hidden" name="update_log" id="update_log" value="0">
 <input type="hidden" name="id" id="id" value="<?php echo $id ?>">
+<input type="hidden" name="bug_id" id="bug_id" value="<?php echo $arr["bug_id"] ?>">
 </form>
 <fieldset>
 	<legend>BugTrack Record</legend>
@@ -128,7 +129,7 @@ if ($type == "unassigned") {
 </fieldset>
 <p align="center">
 <?php echo $elink ?>
-<a href="bt.buglist.php?<?php echo $nextlink; ?>">Show list</a>
+<a href="#" onclick="return bt.cancelDialog();">Show list</a>
 -- <a href="#" onclick="return bt.email_bug('<?php echo $id; ?>');">Email Bug</a>
 </p>
 <div id="worklogDiv">
@@ -143,9 +144,9 @@ if ($count > 0):
 	foreach ($rows as $row) {
 		//list($wid,$bid,$btusernm,$comments,$entry_dtm)=$row;
 		if ($row["user_nm"] != "") {
-			$arr = get_user($dbh,$row["user_nm"]);
-			$ename = "$arr[1] $arr[0]";
-			$email = $arr[2];
+			$arr2 = get_user($dbh,$row["user_nm"]);
+			$ename = "$arr2[1] $arr2[0]";
+			$email = $arr2[2];
 		} else {$ename=""; $email="";}
 ?>
 <tr><td><b>Date/Time: <?php echo date("m/d/Y g:i a",$row["entry_dtm"]->sec); ?>, By: <a href="mailto:<?php echo $email ?>"><?php echo $ename; ?></a></b></td></tr>
@@ -156,4 +157,4 @@ endif;
 ?>
 </table>
 </div>
-<script type="text/javascript">get_files('<?php echo $id ?>');</script>
+<script type="text/javascript">get_files('<?php echo $arr["bug_id"] ?>');</script>

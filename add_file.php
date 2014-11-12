@@ -1,7 +1,7 @@
 <?php
 // add_file.php - add an upload file to the space
 // Ron Patterson, WildDog Design
-// PDO version
+// MongoDB version
 
 ini_set("display_errors","0");
 
@@ -14,12 +14,12 @@ if ($method == "post") {
 	extract($_POST);
 }
 else {
-	$id = isset($_GET["id"]) ? intval($_GET["id"]) : "";
+	$id = isset($_GET["id"]) ? $_GET["id"] : "";
 }
 
 require_once("dbdef.php");
 require("bugcommon.php");
-require("BugTrack.class.php");
+require("BugTrackMongo.class.php");
 $ttl = "BugTrack Attachment";
 $usernm = "rlpatter";
 
@@ -112,6 +112,7 @@ if ($msg == "" and isset($_FILES['upfile']) and is_uploaded_file($_FILES['upfile
 		$raw_file = file_get_contents($new_filename);
 		//$filename = addslashes($_FILES['upfile']['name']);
 		$filename = $_FILES['upfile']['name'];
+		//var_dump($id, $filename, $size);
 		$id = $bug->addAttachment($id, $filename, $size, $raw_file);
 		$msg .= "File is valid, and was successfully uploaded as {$_FILES['upfile']['name']}.\n";
 		echo "<script type='text/javascript'>fini_upload();</script>";

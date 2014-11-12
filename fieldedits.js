@@ -133,7 +133,7 @@ function watch_add (w) {
 	if ($('#update_list').val() == "1") {
 		$('#update_list').val("0");
 		w.close();
-		get_files($('#id').val());
+		get_files($('#bug_id').val());
 		return false;
 	}
 	setTimeout(function () {
@@ -146,7 +146,7 @@ function add_file () {
 	//$('errors').update();
 	$('#update_list').val("0");
 	//alert("add_file called");
-	w = window.open('add_file.php?id='+$('#id').val(), 'Add_file', 'width=620,height=280,resizable,menubar,scrollbars');
+	w = window.open('add_file.php?id='+$('#bug_id').val(), 'Add_file', 'width=620,height=280,resizable,menubar,scrollbars');
 	setTimeout("watch_add(w)",2000);
 	return false;
 }
@@ -154,7 +154,7 @@ function add_file () {
 function remove_file (id) {
 	if (!confirm('Really remove this attachment file?')) return false;
 	$.post('remove_fileAjax.php', { id: id }, function (msg) {
-		get_files($('#id').val());
+		get_files($('#bug_id').val());
 	});
 	return false;
 }

@@ -1,20 +1,20 @@
 <?php
 // get_file.php
 // Ron Patterson, WildDog Design
-// PDO version
+// MongoDB version
 	session_cache_limiter("private, must-revalidate");
 	
 	$id = $_GET["id"];
 	
 	require("dbdef.php");
-	require("BugTrack.class.php");
+	require("BugTrackMongo.class.php");
 
 	$bug = new BugTrack($dbpath);
 
 	$r = $bug->getBugAttachment($id);
 	if (!$r) die("ERROR: No attachment found ($id)");
 	//print_r($r); exit;
-	$r = (object)$r[0];
+	$r = (object)$r;
 	$hash = $r->file_hash;
 	$pdir = substr($hash,0,2);
 	$data = file_get_contents($bug->getAdir().$pdir."/".$hash);

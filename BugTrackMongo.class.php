@@ -249,7 +249,7 @@ END;
 	}
 
 	// rec = record array
-	public function addAttachment ($id, $filename, $size, $raw_file)
+	public function addAttachment ($bug_id, $filename, $size, $raw_file)
 	{
 		// id, bug_id, file_name, file_size, file_hash, entry_dtm
 		//extract($rec);
@@ -257,9 +257,9 @@ END;
 		$hash = md5($raw_file);
 		$arrTemp = array(
   "bug_id" => $bug_id
-, "file_name" => $file_name
-, "file_size" => $file_size
-, "file_hash" => $file_hash
+, "file_name" => $filename
+, "file_size" => $size
+, "file_hash" => $hash
 , "entry_dtm" => new MongoDate()
 );
 		$res = $this->db->bt_attachments->insert($arrTemp);
