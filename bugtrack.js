@@ -11,7 +11,7 @@ var bt = // setup the bt namespace
 
 	check_session: function (event)
 	{
-		alert("check_session called");
+		//alert("check_session called");
 		var params = "action=bt_check_session";
 		$.post(
 			URL,
@@ -88,6 +88,7 @@ var bt = // setup the bt namespace
 // 					$('body').append(user);
 					$('#bt_user_name_top').html(row.fname+' '+row.lname);
 					$('#bt_user_heading').show();
+                    if (row.roles[0] != 'admin') $('#bt_admin_btn').html('');
 					stimer = window.setTimeout(bt.check_session,300000);
 				}
 			}
@@ -212,6 +213,7 @@ var bt = // setup the bt namespace
 			{
 				//$('#content_div').html(response);
 				bt.showDialog('BugTrack Entry '+bid,response);
+				$('#errors').html('');
 			}
 		);
 		return false;
@@ -233,6 +235,7 @@ var bt = // setup the bt namespace
 
 	bughandler: function( event ) {
 		//alert('bughandler');
+        $('#errors').html('');
 		var err = bt.validate();
 		if (err != '')
 		{
@@ -248,11 +251,14 @@ var bt = // setup the bt namespace
 			{
 				if (/^SUCCESS/.test(response))
 				{
-					var id = response.replace(/^SUCCESS /,'');
-					bt.bugshow(event,id);
+					var str = response.replace(/^SUCCESS /,'');
+                    var arr = str.split(',');
+                    var id = arr[0];
+                    var bid = arr[1];
+					bt.bugshow(event,id,bid);
 				}
 				else
-					$('#content_div').html(response);
+					$('#errors').html(response);
 			}
 		);
 		return false;
@@ -522,6 +528,26 @@ var bt = // setup the bt namespace
 			{
 				alert(response);
 				bt.bugshow(event,id,bid);
+			}
+		);
+		return false;
+	},
+
+	remove_file: function ( event, id )
+	{
+		if (!confirm("Really delete this attachment?")) return false;
+		var params = "action=remove_file&id="+id;
+		$.post(
+			URL,
+			params,
+			function (response)
+			{
+				if (/^SUCCESS/.test(response))
+				{
+					bt.bugshow(event,id,bid);
+				}
+				else
+					$('#content_div').html(response);
 			}
 		);
 		return false;

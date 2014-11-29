@@ -8,7 +8,8 @@ require_once("bugcommon.php");
 extract($_POST);
 $rec = $_POST;
 
-$bid=intval($id);
+//$bid=intval($id);
+$bid = $id;
 if (!isset($action)) die("No entry form provided!");
 
 $err="";

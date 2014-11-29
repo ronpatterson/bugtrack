@@ -96,6 +96,7 @@ END;
 	{
 		if (empty($crit)) $crit = array();
 		$results = array();
+		//var_dump($crit);
 		$coll = $this->db->bt_bugs->find($crit)->sort($order);
 		while ($coll->hasNext())
 		{
@@ -139,16 +140,14 @@ END;
 , "priority" => $priority
 , "comments" => $comments
 , "solution" => $solution
-, "assigned_to" => $assigned_to
+//, "assigned_to" => $assigned_to
 , "entry_dtm" => new MongoDate()
-, "update_dtm" => null
-, "closed_dtm" => null
 );
 		$res = $this->db->bt_bugs->insert($arrTemp);
 		//var_dump($res);
 		//$count = $res["n"];
 		if (!$res) die("ERROR: Record not added! $sql");
-		return $iid.",".$bug_id;
+		return (string)$iid.",".$bug_id;
 	}
 
 	// idx = record index
@@ -165,7 +164,7 @@ END;
 , "priority" => $priority
 , "comments" => $comments
 , "solution" => $solution
-, "assigned_to" => $assigned_to
+//, "assigned_to" => $assigned_to
 , "update_dtm" => new MongoDate()
 );
 		if ($closed)
@@ -178,9 +177,10 @@ END;
 	public function deleteBug ($id)
 	{
 		$id = new MongoId($id);
-		$this->db->bt_worklog.remove(array("_id" => $id));
-		$this->db->bt_attachments.remove(array("_id" => $id));
-		$this->db->bt_bugs.remove(array("_id" => $id));
+		$this->db->bt_worklog->remove(array("_id" => $id));
+		$this->db->bt_attachments->remove(array("_id" => $id));
+		$this->db->bt_bugs->remove(array("_id" => $id));
+		return "SUCCESS";
 	}
 
 	// rec = record array
@@ -280,8 +280,9 @@ END;
 		$result = $this->db->bt_attachments->findOne(array("_id"=>new MongoId($id)),array("file_hash"=>1));
 		if (!empty($result))
 		{
+			$id = new MongoId($id);
 			$hash = $result["file_hash"];
-			$res = $this->db->bt_bugs.remove(array("_id" => $id));
+			$res = $this->db->bt_attachments->remove(array("_id" => $id));
 			if ($res)
 			{
 				$pdir = substr($hash,0,2);

@@ -17,21 +17,21 @@ $from_email = "BugTrack <cdocapps@state.co.us>";
 function repl($matches) {
 	$x=$matches[2];
 	// must have at least one period
-	if (!ereg("\.",$x)) return $x;
+	if (!preg_match("/\\./",$x)) return $x;
 	// check for possibly just slash separators
-	if (ereg("^[_A-Za-z0-9]+([/][_A-Za-z0-9]+)*$",$x)) return $x;
+	if (preg_match("@^[_A-Za-z0-9]+([/][_A-Za-z0-9]+)*$@",$x)) return $x;
 	// check for possibly just slash separators
-	if (ereg("^[_A-Za-z0-9]+([/][_A-Za-z0-9]+)*$",$x)) return $x;
+	if (preg_match("@^[_A-Za-z0-9]+([/][_A-Za-z0-9]+)*$@",$x)) return $x;
 	// check for possibly just a decimal number
-	if (ereg("^[0-9]+(\.[0-9]*-?)*$",$x)) return $x;
+	if (preg_match("/^[0-9]+(\\.[0-9]*-?)*$/",$x)) return $x;
 	// check for just a letter . and letter/digit
-	if (ereg("^[A-Za-z]\.[A-Za-z0-9]$",$x)) return $x;
+	if (preg_match("/^[A-Za-z]\\.[A-Za-z0-9]$/",$x)) return $x;
 	// check for just a letter . and letter...
-	if (ereg("^[A-Za-z](\.[A-Za-z])+$",$x)) return $x;
+	if (preg_match("/^[A-Za-z](\\.[A-Za-z])+$/",$x)) return $x;
 	// might be an email address
-	if (ereg("@",$x))
+	if (preg_match("/@/",$x))
 		return "<a href='mailto:$x'>$x</a>";
-	elseif (ereg("^https",$matches[0]))
+	elseif (preg_match("/^https/",$matches[0]))
 		return "<a href='https://$x'>$x</a>";
 	else
 		return "<a href='http://$x'>$x</a>";

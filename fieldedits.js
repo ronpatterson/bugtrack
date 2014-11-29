@@ -151,13 +151,13 @@ function add_file () {
 	return false;
 }
 
-function remove_file (id) {
-	if (!confirm('Really remove this attachment file?')) return false;
-	$.post('remove_fileAjax.php', { id: id }, function (msg) {
-		get_files($('#bug_id').val());
-	});
-	return false;
-}
+// function remove_file (id) {
+// 	if (!confirm('Really remove this attachment file?')) return false;
+// 	$.post('remove_fileAjax.php', { id: id }, function (msg) {
+// 		get_files($('#bug_id').val());
+// 	});
+// 	return false;
+// }
 
 function delete_entry (id) {
 	if (!confirm('Really delete this bug entry?')) return false;

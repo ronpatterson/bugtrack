@@ -3,13 +3,12 @@ ini_set("display_errors", "on");
 require_once("btsession.php");
 // bugtrack_ctlr.php - BugTrack controller
 // Ron Patterson
-// SQLite version
+// MongoDB version
 // if ($_SESSION['user_id']=="") {
 // 	die("<html><b>Not logged in!!<p><a href=login.php>Login</a></b></html>");
 // }
 // connect to the database 
 require_once("dbdef.php");
-//require("BugTrack.class.php");
 require("BugTrackMongo.class.php");
 $db = new BugTrack($dbpath);
 
@@ -44,10 +43,8 @@ switch ($args["action"])
 		require_once("bugedit1.php");
 		break;
 	case "delete":
-		$sql = "delete from bt_bugsx where id=?";
-		$result = $db->execute($sql,array($args["id"]));
-		if ($result) echo "SUCCESS";
-		die("ERROR: Delete failed!");
+		$res = $db->deleteBug($args["id"]);
+		echo $res;
 		break;
 	case "add_worklog":
 		require_once("bugedit3.php");
@@ -96,6 +93,10 @@ switch ($args["action"])
 	case "assign_user":
 		$recs = $db->assign_user($args["id"],$args["uid"]);
 		echo $recs;
+		break;
+	case "remove_file":
+		$result = $db->deleteAttachment($args["id"]);
+		echo $result;
 		break;
 	default:
 		die("ERROR: Unknown arguments, ".print_r($args,1));

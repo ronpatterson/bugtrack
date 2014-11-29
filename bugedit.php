@@ -13,7 +13,8 @@ function type_select ($db, $name, $def) {
     {
     	$row = $coll->getNext();
 		if ($row["cd"] == $def) $chk=" selected"; else $chk="";
-		$out .= "<option value='{$row["cd"]}|{$row["descr"]}'{$chk}>{$row["descr"]}</option>\n";
+		// $out .= "<option value='{$row["cd"]}|{$row["descr"]}'{$chk}>{$row["descr"]}</option>\n";
+		$out .= "<option value='{$row["cd"]}'{$chk}>{$row["descr"]}</option>\n";
 	}
 	$out .= "</select>\n";
 	return $out;
@@ -91,9 +92,9 @@ if ($action == "add") {
 	$product = stripslashes($product);
 	$comments = stripslashes($comments);
 	$solution = stripslashes($solution);
-	$edtm = $entry_dtm != "" ? date("m/d/Y g:i a",$entry_dtm->sec) : "";
-	$udtm = $update_dtm != "" ? date("m/d/Y g:i a",$update_dtm->sec) : "";
-	$cdtm = $closed_dtm != "" ? date("m/d/Y g:i a",$closed_dtm->sec) : "";
+	$edtm = !empty($entry_dtm) ? date("m/d/Y g:i a",$entry_dtm->sec) : "";
+	$udtm = !empty($update_dtm) ? date("m/d/Y g:i a",$update_dtm->sec) : "";
+	$cdtm = !empty($closed_dtm) ? date("m/d/Y g:i a",$closed_dtm->sec) : "";
 	/*
 	$descr = htmlentities($descr);
 	$product = htmlentities($product);
@@ -128,7 +129,7 @@ if ($action == "add") {
 	}
 */
 }
-$grp=group_select($db,"group",$group);
+$grp = ($action == "add") ? group_select($db,"group",$group) : $group;
 $btypes=type_select($db,"bug_type",$bug_type);
 $pri=retselectarray('priority',$parr,$priority);
 //$grp=retselectarray('group',$grparr,$group);

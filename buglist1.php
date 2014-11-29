@@ -81,7 +81,11 @@ if ($type == "assignments") {
 }
 if ($type == "unassigned") {
 	//$crit .= " and ifnull(assigned_to,'')=''";
-	$crit["assigned_to"] = "";
+	$crit['$or'] = array(
+		array("assigned_to" => array('$exists' => false))
+		,array("assigned_to" => null)
+		,array("assigned_to" => "")
+	);
 	$ttl="BugTrack Unassigned";
 	#$type = "open";
 	$otype = "open";
@@ -89,7 +93,7 @@ if ($type == "unassigned") {
 if ($type == "undefined" and substr($otype,0,1)=='o')
 	//$crit .= " and status<>'c'";
 	$crit["status"] = array('$ne' => "c");
-elseif ($type == "assignments" or $type == "unassigned")
+elseif ($type == "assignments" or $type == "unassigned" or $type == "bytype")
 	//$crit .= " and status<>'c'";
 	$crit["status"] = array('$ne' => "c");
 else

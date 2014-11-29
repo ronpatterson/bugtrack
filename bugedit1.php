@@ -9,7 +9,6 @@ require("bugcommon.php");
 
 extract($_POST);
 $rec = $_POST;
-$bid = $id;
 if (!isset($action2)) die("No entry form provided!");
 
 $err="";
@@ -49,16 +48,18 @@ Comments: $comments
 ";
 	//mail($email,"New BugTrack entry $bid",stripcslashes($msg),$headers);
 } else {
+    $bid = $bug_id;
 	#$comments = ereg_replace("'","''",$comments);
 	if ($assigned_to == "") $assigned_to="NULL";
 	if ($status != $oldstatus and $status == "c")
 		$closed = true; else $closed = false;
-	$db->updateBug($bid,$rec,$closed);
+	$db->updateBug($id,$rec,$closed);
 	if ($status != $oldstatus) {
 // 		$descr = stripcslashes($descr);
 // 		$comments = stripcslashes($comments);
 // 		$solution = stripcslashes($solution);
-		$headers = "From: $from_email\r\nCC: $admin_emails,$ebemail,$aemail";
+//		$headers = "From: $from_email\r\nCC: $admin_emails,$ebemail,$aemail";
+		$headers = "From: $from_email\r\nCC: $admin_emails";
 		$msg = "Hello,
 
 BugTrack entry $bid status was changed by $uname.
@@ -73,5 +74,5 @@ Solution: $solution
 	}
 	#$dvd_title = ereg_replace("\"","\\&quot;",$dvd_title);
 }
-echo "SUCCESS ".$bid;
+echo "SUCCESS ".$id.",".$bid;
 ?>

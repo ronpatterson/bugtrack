@@ -22,10 +22,10 @@ $product = stripslashes($arr["product"]);
 $comments = stripslashes($arr["comments"]);
 $solution = stripslashes($arr["solution"]);
 $user_nm = $arr["user_nm"];
-$assigned_to = $arr["assigned_to"];
-$edtm = $arr["entry_dtm"] != "" ? date("m/d/Y g:i a",$arr["entry_dtm"]->sec) : "";
-$udtm = $arr["update_dtm"] != "" ? date("m/d/Y g:i a",$arr["update_dtm"]->sec) : "";
-$cdtm = $arr["closed_dtm"] != "" ? date("m/d/Y g:i a",$arr["closed_dtm"]->sec) : "";
+$assigned_to = !empty($arr["assigned_to"]) ? $arr["assigned_to"] : "";
+$edtm = !empty($arr["entry_dtm"]) ? date("m/d/Y g:i a",$arr["entry_dtm"]->sec) : "";
+$udtm = !empty($arr["update_dtm"]) ? date("m/d/Y g:i a",$arr["update_dtm"]->sec) : "";
+$cdtm = !empty($arr["closed_dtm"]) ? date("m/d/Y g:i a",$arr["closed_dtm"]->sec) : "";
 $bt = $db->getBugTypeDescr($arr["bug_type"]);
 # attachments are now in the db
 $files="";
@@ -43,7 +43,7 @@ if (isset($user_nm) and $user_nm != "") {
 	$ename = "$arr2[1] $arr2[0]";
 	$email = $arr2[2];
 };
-$aname = ""; $aemail = "";
+$aname = "None"; $aemail = "";
 if (isset($assigned_to) and $assigned_to != "") {
 	$arr2 = get_user($dbh,$assigned_to);
 	$aname = "$arr2[1] $arr2[0]";
@@ -51,8 +51,10 @@ if (isset($assigned_to) and $assigned_to != "") {
 } else $aname="";
 $alink = ""; $elink = "";
 //if (ereg($_SESSION["uname"],AUSERS)) {
+if ($_SESSION["roles"] == "admin") {
 //	$alink = "<a href='#' onclick='return bt.assign_locate(\"bugassign.php?id=$id\")'>Assign</a>";
 	$alink = "<a href='#' onclick='return bt.assign_locate(\"$id\",\"{$arr["bug_id"]}\");'>Assign</a>";
+}
 	$elink = <<<END
 <a href="#" onclick="return bt.bugedit(event,'$id','{$arr["bug_id"]}');">Edit record</a>
 -- <a href="#" onclick="return delete_entry('$id','{$arr["bug_id"]}');">Delete</a> --
