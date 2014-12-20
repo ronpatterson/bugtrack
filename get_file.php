@@ -5,13 +5,14 @@
 	session_cache_limiter("private, must-revalidate");
 	
 	$id = $_GET["id"];
+	$idx = intval($_GET["idx"]);
 	
 	require("dbdef.php");
 	require("BugTrackMongo.class.php");
 
 	$bug = new BugTrack($dbpath);
 
-	$r = $bug->getBugAttachment($id);
+	$r = $bug->getBugAttachment($id,$idx);
 	if (!$r) die("ERROR: No attachment found ($id)");
 	//print_r($r); exit;
 	$r = (object)$r;

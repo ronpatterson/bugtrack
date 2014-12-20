@@ -24,9 +24,10 @@ $files="";
 $rows = $bug->getBugAttachments($id);
 if (count($rows) > 0)
 {
+	$i = 0;
 	foreach ($rows as $row) {
 		//list($aid, $fname, $size)=$row;
-		$files.="<a href='get_file.php?id=".(string)$row["_id"]."' target='_blank'>{$row["file_name"]}</a> (<a href='#' onclick='return bt.remove_file(event,\"".(string)$row["_id"]."\");'>Remove</a>) ({$row["file_size"]})<br />";
+		$files.="<a href='get_file.php?id={$id}&idx={$i}' target='_blank'>{$row["file_name"]}</a> (<a href='#' onclick='return bt.remove_file(event,\"{$id}\",{$i});'>Remove</a>) ({$row["file_size"]})<br />";
 	}
 }
 if ($files == "") $files = "None";

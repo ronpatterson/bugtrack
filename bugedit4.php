@@ -18,7 +18,7 @@ if ($comments == "")
 if ($err != "") die("<pre>$err</pre>");
 
 if ($action2 == "add") {
-	$id = $db->addWorkLog($rec);
+	$id = $db->addWorkLog($id,$rec);
 	$comments = stripcslashes($comments);
 	$msg = "Hello,
 

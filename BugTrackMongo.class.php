@@ -177,25 +177,33 @@ END;
 	public function deleteBug ($id)
 	{
 		$id = new MongoId($id);
-		$this->db->bt_worklog->remove(array("_id" => $id));
-		$this->db->bt_attachments->remove(array("_id" => $id));
+		//$this->db->bt_worklog->remove(array("_id" => $id));
+		//$this->db->bt_attachments->remove(array("_id" => $id));
 		$this->db->bt_bugs->remove(array("_id" => $id));
 		return "SUCCESS";
 	}
 
 	// rec = record array
-	public function addWorkLog ($rec)
+	public function addWorkLog ($id, $rec)
 	{
+		$arrBug = $this->getBug($id);
+		$arrWorklogs = $arrBug["worklog"];
 		// id, bug_id, user_nm, comments, entry_dtm
-		extract($rec);
 		$arrTemp = array(
-  "bug_id" => $bug_id
-, "user_nm" => $usernm
-, "comments" => $comments
-, "wl_public" => $wl_public
+  "user_nm" => $rec["usernm"]
+, "comments" => $rec["comments"]
+, "wl_public" => $rec["wl_public"]
 , "entry_dtm" => new MongoDate()
 );
-		$res = $this->db->bt_worklog->insert($arrTemp);
+		$arrWorklogs[] = $arrTemp;
+		$res = $this->db->bt_bugs->update(
+			array("_id" => $arrBug["_id"])
+			,array(
+				'$set' => array(
+					"worklog" => $arrWorklogs
+				)
+			)
+		);
 		if (!$res) die("ERROR: Record not added! $sql");
 		return 1;
 	}
@@ -204,14 +212,22 @@ END;
 	// rec = record array
 	public function updateWorkLog ($idx, $rec)
 	{
-		extract($rec);
+		$arrBug = $this->getBug($id);
+		$arrWorklogs = $arrBug["worklog"];
 		$arrTemp = array(
-  "user_nm" => $usernm
-, "comments" => $comments
-, "wl_public" => $wl_public
+  "user_nm" => $rec["usernm"]
+, "comments" => $rec["comments"]
+, "wl_public" => $rec["wl_public"]
 );
-		$res = $this->db->bt_bugs->update(array("_id"=>new MongoId($idx)),array('$set'=>$arrTemp));
-		$count = $res["n"];
+		$arrWorklogs[$idx] = $arrTemp;
+		$res = $this->db->bt_bugs->update(
+			array("_id" => $arrBug["_id"])
+			,array(
+				'$set' => array(
+					"worklog" => $arrWorklogs
+				)
+			)
+		);
 		if ($count == 0) die("ERROR: Record not updated! $sql");
 	}
 
@@ -232,37 +248,43 @@ END;
 		return $results;
 	}
 
-	public function getBugAttachment ($id)
+	public function getBugAttachment ($id, $idx)
 	{
-		$result = $this->db->bt_attachments->findOne(array("_id"=>new MongoId($id)));
-		return $result;
+		$arrBug = $this->getBug($id);
+		$arrAttachments = !empty($arrBug["attachments"]) ? $arrBug["attachments"] : array();
+		return $arrAttachments[$idx];
 	}
 
 	public function getBugAttachments ($id) {
-		$results = array();
-		$coll = $this->db->bt_attachments->find(array("bug_id"=>$id));
-		while ($coll->hasNext())
-		{
-			$results[] = $coll->getNext();
-		}
-		return $results;
+		$arrBug = $this->getBug($id);
+		$arrAttachments = !empty($arrBug["attachments"]) ? $arrBug["attachments"] : array();
+		return $arrAttachments;
 	}
 
 	// rec = record array
 	public function addAttachment ($bug_id, $filename, $size, $raw_file)
 	{
+		$arrBug = $this->getBug($id);
+		$arrAttachments = !empty($arrBug["attachments"]) ? $arrBug["attachments"] : array();
 		// id, bug_id, file_name, file_size, file_hash, entry_dtm
 		//extract($rec);
 		//$hash = md5($id.$filename.date("YmdHis"));
 		$hash = md5($raw_file);
 		$arrTemp = array(
-  "bug_id" => $bug_id
-, "file_name" => $filename
+  "file_name" => $filename
 , "file_size" => $size
 , "file_hash" => $hash
 , "entry_dtm" => new MongoDate()
 );
-		$res = $this->db->bt_attachments->insert($arrTemp);
+		$arrAttachments[] = $arrTemp;
+		$res = $this->db->bt_bugs->update(
+			array("_id" => $arrBug["_id"])
+			,array(
+				'$set' => array(
+					"attachments" => $arrAttachments
+				)
+			)
+		);
 		$pdir = substr($hash,0,2);
 		if (!file_exists($this->adir.$pdir))
 		{
@@ -275,19 +297,24 @@ END;
 		return 1;
 	}
 
-	public function deleteAttachment ($id)
+	public function deleteAttachment ($id, $idx)
 	{
-		$result = $this->db->bt_attachments->findOne(array("_id"=>new MongoId($id)),array("file_hash"=>1));
-		if (!empty($result))
+		$arrBug = $this->getBug($id);
+		$arrAttachments = $arrBug["attachments"];
+		$arrAttachments2 = array_splice($arrAttachments,$idx,1);
+		$res = $this->db->bt_bugs->update(
+			array("_id" => $arrBug["_id"])
+			,array(
+				'$set' => array(
+					"attachments" => $arrAttachments2
+				)
+			)
+		);
+		if ($res)
 		{
-			$id = new MongoId($id);
-			$hash = $result["file_hash"];
-			$res = $this->db->bt_attachments->remove(array("_id" => $id));
-			if ($res)
-			{
-				$pdir = substr($hash,0,2);
-				unlink($this->adir.$pdir."/".$hash);
-			}
+			$hash = $arrBug["file_hash"];
+			$pdir = substr($hash,0,2);
+			unlink($this->adir.$pdir."/".$hash);
 		}
 	}
 

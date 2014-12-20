@@ -29,11 +29,11 @@ $cdtm = !empty($arr["closed_dtm"]) ? date("m/d/Y g:i a",$arr["closed_dtm"]->sec)
 $bt = $db->getBugTypeDescr($arr["bug_type"]);
 # attachments are now in the db
 $files="";
-$rows = $db->getBugAttachments($arr["bug_id"]);
+$rows = $db->getBugAttachments($id);
 if (count($rows) > 0) {
 	foreach ($rows as $row) {
 		//list($aid,$fname,$size)=$row;
-		$files.="<a href='get_file.php?id=".$row["bug_id"]."' target='_blank'>{$row["file_name"]}</a> ({$row["file_size"]})<br>";
+		$files.="<a href='get_file.php?id=".$id."' target='_blank'>{$row["file_name"]}</a> ({$row["file_size"]})<br>";
 	}
 }
 $dbh = $db->getHandle();
@@ -136,7 +136,7 @@ if ($type == "unassigned") {
 </p>
 <div id="worklogDiv">
 <?php
-$rows = $db->getWorkLogEntries($arr["bug_id"]);
+$rows = !empty($arr["worklog"]) ? $arr["worklog"] : array();
 $count = count($rows);
 echo "<p align='center'>$count Worklog entries found -- <a href='#' onclick='return bt.add_worklog(event,\"$id\");'>Add</a><p>\n";
 if ($count > 0):
@@ -159,4 +159,4 @@ endif;
 ?>
 </table>
 </div>
-<script type="text/javascript">get_files('<?php echo $arr["bug_id"] ?>');</script>
+<script type="text/javascript">get_files('<?php echo $id ?>');</script>
