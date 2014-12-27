@@ -41,7 +41,7 @@ class BugTrack {
 	
 	public function __destruct ()
 	{
-		//$this->mdb->close();
+		$this->mdb->@close();
 		$this->mdb = null;
 	}
 	
@@ -237,17 +237,6 @@ END;
 		return $descr["descr"];
 	}
 
-	public function getWorkLogEntries ($id)
-	{
-		$results = array();
-		$coll = $this->db->bt_worklog->find(array("bug_id"=>$id));
-		while ($coll->hasNext())
-		{
-			$results[] = $coll->getNext();
-		}
-		return $results;
-	}
-
 	public function getBugAttachment ($id, $idx)
 	{
 		$arrBug = $this->getBug($id);
@@ -262,7 +251,7 @@ END;
 	}
 
 	// rec = record array
-	public function addAttachment ($bug_id, $filename, $size, $raw_file)
+	public function addAttachment ($id, $filename, $size, $raw_file)
 	{
 		$arrBug = $this->getBug($id);
 		$arrAttachments = !empty($arrBug["attachments"]) ? $arrBug["attachments"] : array();
@@ -301,6 +290,7 @@ END;
 	{
 		$arrBug = $this->getBug($id);
 		$arrAttachments = $arrBug["attachments"];
+		// remove the attachment item
 		$arrAttachments2 = array_splice($arrAttachments,$idx,1);
 		$res = $this->db->bt_bugs->update(
 			array("_id" => $arrBug["_id"])

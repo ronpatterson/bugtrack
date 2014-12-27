@@ -146,7 +146,7 @@ function add_file () {
 	//$('errors').update();
 	$('#update_list').val("0");
 	//alert("add_file called");
-	w = window.open('add_file.php?id='+$('#bug_id').val(), 'Add_file', 'width=620,height=280,resizable,menubar,scrollbars');
+	w = window.open('add_file.php?id='+$('#id').val(), 'Add_file', 'width=620,height=280,resizable,menubar,scrollbars');
 	setTimeout("watch_add(w)",2000);
 	return false;
 }

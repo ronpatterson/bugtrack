@@ -28,6 +28,7 @@ if (count($rows) > 0)
 	foreach ($rows as $row) {
 		//list($aid, $fname, $size)=$row;
 		$files.="<a href='get_file.php?id={$id}&idx={$i}' target='_blank'>{$row["file_name"]}</a> (<a href='#' onclick='return bt.remove_file(event,\"{$id}\",{$i});'>Remove</a>) ({$row["file_size"]})<br />";
+		++$i;
 	}
 }
 if ($files == "") $files = "None";

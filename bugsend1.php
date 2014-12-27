@@ -56,7 +56,7 @@ Update Date/Time: $udtm
 Closed Date/Time: $cdtm
 
 ";
-	$rows = $db->getWorkLogEntries($id);
+	$rows = !empty($arr["worklog"]) ? $arr["worklog"] : array();
 	$msg .= count($rows)." Worklog entries found
 
 ";
