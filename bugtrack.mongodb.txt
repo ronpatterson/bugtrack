@@ -1,0 +1,74 @@
+-- bugtrack.mongodb.txt
+
+-- MongoDB design version
+
+-- Revision 0.1, 19-Dev-2014
+
+-- Ron Patterson, WildDog Design
+
+-- collections document definitions
+
+db.counters : {
+    _id : string,
+    seq : int32
+}
+
+db.bt_type : {
+	_id : ObjectID,
+	cd : char,
+	descr : string,
+	active : string
+}
+
+db.bt_groups {
+	_id : ObjectID,
+	cd : string,
+	descr : string,
+	active : string
+}
+
+db.bt_bugs {
+	_id : ObjectID,
+	descr : string,
+	product : string,
+	user_nm : string,
+	bug_type : char,
+	status : char, // o=open, h=hold, w=working, c=closed
+	priority : char, // 1=high, 2=normal, 3=low
+	comments : string,
+	solution : string,
+	assigned_to : string,
+	bug_id : string, // <group><id>
+	entry_dtm : ISODate,
+	update_dtm : ISODate,
+	closed_dtm : ISODate,
+    worklog : [{ // array
+        user_nm : string
+        comments : string,
+        wl_public : char,
+        entry_dtm : ISODate
+    }],
+    attachment : [{ // array
+        file_name : string,
+        file_size : int32,
+        file_hash : string,
+        entry_dtm : ISODate
+    }]
+}
+
+// bug_type documents
+db.bt_type.insert({cd:'h',descr:'Hardware issue',active:'y'});
+db.bt_type.insert({cd:'s',descr:'Software issue',active:'y'});
+db.bt_type.insert({cd:'d',descr:'Database issue',active:'y'});
+db.bt_type.insert({cd:'g',descr:'General issue',active:'y'});
+db.bt_type.insert({cd:'n',descr:'Network issue',active:'y'});
+db.bt_type.insert({cd:'m',descr:'EMail issue',active:'y'});
+db.bt_type.insert({cd:'c',descr:'Calendar issue',active:'y'});
+db.bt_type.insert({cd:'b',descr:'BugTrack issue',active:'y'});
+db.bt_type.insert({cd:'w',descr:'Web browser issue',active:'y'});
+db.bt_type.insert({cd:'x',descr:'Web server issue',active:'y'});
+db.bt_type.insert({cd:'p',descr:'Desktop/laptop PC issue',active:'y'});
+db.bt_type.insert({cd:'a',descr:'Desktop/laptop Mac issue',active:'y'});
+db.bt_type.insert({cd:'z',descr:'Mobile/Palm/Pocket PC issue',active:'y'});
+db.bt_type.insert({cd:'u',descr:'Unknown issue',active:'y'});
+db.bt_type.insert({cd:'e',descr:'Enhancement',active:'y'});
