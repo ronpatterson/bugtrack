@@ -27,7 +27,7 @@ information you fill in, the narrower the search becomes.</h5>
 	<label>&nbsp;</label>
 	<div class="fields2"><input type="submit" name="find" value="Start Search"> <input
  type="reset"></div><br class="clear">
-	<div id="results"></div>
+	<div id="assign_results"></div>
 	</fieldset>
 </form>
 </div>

@@ -506,9 +506,9 @@ var bt = // setup the bt namespace
 			params,
 			function (response)
 			{
-				$('#dialog-content').html(response);
+				$('#assign_results').html(response);
 				$('#errors').html('');
-				$('#dialog-content table').dataTable({
+				$('#assign_results table').dataTable({
 					"aaSorting": [[ 0, "asc" ]]
 					//"bJQueryUI": true,
 					//"sPaginationType": "full_numbers"

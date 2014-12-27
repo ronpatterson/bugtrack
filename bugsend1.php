@@ -20,12 +20,12 @@ if (count($arr) == 0) die("ERROR: Bug not found ($id)");
 extract($arr);
 $bt = $db->getBugTypeDescr($bug_type);
 $dbh = $db->getHandle();
-if ($user_nm != "") {
+if (!empty($user_nm)) {
 	$arr = get_user($dbh,$user_nm);
 	$ename = "$arr[1] $arr[0]";
 	$email = $arr[2];
 } else {$ename=""; $email="";}
-if ($assigned_to != "") {
+if (!empty($assigned_to)) {
 	$arr = get_user($dbh,$assigned_to);
 	$aname = "$arr[1] $arr[0]";
 	$aemail = $arr[2];

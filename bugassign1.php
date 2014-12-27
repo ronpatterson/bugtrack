@@ -21,7 +21,7 @@ $results = $db->getUserEntries();
 foreach ($results as $arr)
 {
 	extract($arr);
-	echo $lname1.$fname1;
+	//echo $lname1.$fname1;
 	if ((trim($lname1) != "" and !preg_match("/".$lname1."/i",$lname)) or (trim($fname1) != "" and !preg_match("/".$fname1."/i",$fname))) continue;
 	$list .= <<<END
   <tr>
