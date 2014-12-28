@@ -41,7 +41,7 @@ class BugTrack {
 	
 	public function __destruct ()
 	{
-		$this->mdb->@close();
+		@$this->mdb->close();
 		$this->mdb = null;
 	}
 	
