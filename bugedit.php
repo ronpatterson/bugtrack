@@ -87,7 +87,7 @@ if ($action == "add") {
 	//print_r($arr);
 	extract($arr);
 	// extract the group code
-	$group = ereg_replace("[^A-Z]","",$bug_id);
+	$group = preg_replace("/[^A-Z]/","",$bug_id);
 	$descr = stripslashes($descr);
 	$product = stripslashes($product);
 	$comments = stripslashes($comments);

@@ -145,6 +145,7 @@ if ($count > 0):
 <?php
 	foreach ($rows as $row) {
 		//list($wid,$bid,$btusernm,$comments,$entry_dtm)=$row;
+        if (empty($row)) continue;
 		if ($row["user_nm"] != "") {
 			$arr2 = get_user($dbh,$row["user_nm"]);
 			$ename = "$arr2[1] $arr2[0]";

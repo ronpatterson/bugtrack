@@ -91,7 +91,7 @@ if ($msg == "" and isset($_FILES['upfile']) and is_uploaded_file($_FILES['upfile
 	//	$msg .= "Sorry, directory overflow (max. is $maxsize)<br>\n";
 	//}
 	// check for allowed file name characters
-	elseif (!ereg("^[-A-Za-z0-9._ ]+$",$_FILES['upfile']['name'])) {
+	elseif (!preg_match("/^[-A-Za-z0-9._ ]+$/",$_FILES['upfile']['name'])) {
 		$msg .= "Unallowed characters in file name specified, must be only letters, numbers, ., -, _<br>\n";
 	}
 	// check for max. file name size
@@ -101,7 +101,7 @@ if ($msg == "" and isset($_FILES['upfile']) and is_uploaded_file($_FILES['upfile
 	elseif ($_FILES['upfile']['name'] != "upload.php") {
 		#$newname = ereg_replace("[^A-Za-z0-9._]","_",$_FILES['upfile']['name']);
 		#print_r($_FILES); exit;
-		$newname = ereg_replace("[^A-Za-z0-9._]","_",$_FILES['upfile']['name']);
+		$newname = preg_replace("/[^A-Za-z0-9._]/","_",$_FILES['upfile']['name']);
 		//if (@move_uploaded_file($_FILES['upfile']['tmp_name'], $dir . $newname)) {
 			// update file list when finished
 		$new_filename = $_FILES['upfile']['tmp_name']."_".$id;
