@@ -27,6 +27,7 @@ class BugTrack {
 		// MongoDB database version
 		try
 		{
+			//$this->mdb = new MongoClient($dbpath);
 			$this->mdb = new Mongo($dbpath);
 			$this->db = $this->mdb->bugtrack;
 			//var_dump($this->db);
