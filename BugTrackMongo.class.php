@@ -188,7 +188,7 @@ END;
 	public function addWorkLog ($id, $rec)
 	{
 		$arrBug = $this->getBug($id);
-		$arrWorklogs = $arrBug["worklog"];
+		$arrWorklogs = !empty($arrBug["worklog"]) ? $arrBug["worklog"] : array();
 		// id, bug_id, user_nm, comments, entry_dtm
 		$arrTemp = array(
   "user_nm" => $rec["usernm"]
