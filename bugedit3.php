@@ -37,7 +37,7 @@ if ($user_nm != "") {
 } else {
 	$ebname=""; $ebemail="";
 }
-if ($assigned_to != "") {
+if (isset($assigned_to) and $assigned_to != "") {
 	$arr = get_user($dbh,$assigned_to);
 	$aname = "$arr[0] $arr[1]";
 	$aemail = $arr[2];
