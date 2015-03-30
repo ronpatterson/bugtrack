@@ -84,26 +84,83 @@ END;
 		return "";
 	}
 
+	public function getBTlookups ()
+	{
+		global $sarr,$parr;
+		$results = array();
+		$coll = $this->db->bt_groups->find(array(),array("cd"=>1,"descr"=>1))->sort(array("descr"=>1));
+		while ($coll->hasNext())
+		{
+			$results[] = $coll->getNext();
+		}
+		$results = array("bt_groups"=>$results);
+
+		$results2 = array();
+		$coll = $this->db->bt_type->find(array(),array("cd"=>1,"descr"=>1))->sort(array("descr"=>1));
+		while ($coll->hasNext())
+		{
+			$results2[] = $coll->getNext();
+		}
+		$results["bt_types"] = $results2;
+		$results["bt_status"] = $sarr;
+		$results["bt_priority"] = $parr;
+		return json_encode($results);
+	}
+
 	public function getBug ($id)
 	{
-		// id, descr, product, user_nm, bug_type, status, priority, comments, solution, assigned_to, bug_id, entry_dtm, update_dtm, closed_dtm
+		global $sarr, $parr;
+		// id, descr, product, user_nm, bug_type, status, priority, comments, solution, assigned_to, bug_id, entry_dtm, update_dtm, closed_dtm,worklog,attachments
 		$results = $this->db->bt_bugs->findOne(array("_id"=>new MongoId($id)));
 		if (empty($results)) return array(); // empty record!
-		//$results["entry_dtm"] = date("m/d/Y g:m a",$results["entry_dtm"]->sec);
+		$results["_id"] = (string)$results["_id"];
+		$results["status_descr"] = $sarr[$results["status"]];
+		$results["priority_descr"] = $parr[$results["priority"]];
+		$results["edtm"] = date("m/d/Y g:m a",$results["entry_dtm"]->sec);
+		$results["udtm"] = isset($results["update_dtm"]) ? date("m/d/Y g:m a",$results["update_dtm"]->sec) : "";
+		$results["cdtm"] = isset($results["closed_dtm"]) ? date("m/d/Y g:m a",$results["closed_dtm"]->sec) : "";
+		if (!empty($results["worklog"]))
+		{
+			for ($x=0; $x<count($results["worklog"]); ++$x)
+			{
+				$results["worklog"][$x]["edtm"] = date("m/d/Y g:m a",$results["worklog"][$x]["entry_dtm"]->sec);
+			}
+		}
+		if (!empty($results["attachments"]))
+		{
+			for ($x=0; $x<count($results["attachments"]); ++$x)
+			{
+				$results["attachments"][$x]["edtm"] = date("m/d/Y g:m a",$results["attachments"][$x]["entry_dtm"]->sec);
+			}
+		}
 		return $results;
 	}
 
 	public function getBugs ($crit = array(), $order = array())
 	{
+		global $sarr;
+		$olist = array("bug_id","descr","entry_dtm","status","_id");
 		if (empty($crit)) $crit = array();
 		$results = array();
 		//var_dump($crit);
-		$coll = $this->db->bt_bugs->find($crit)->sort($order);
+		$coll = $this->db->bt_bugs->find($crit,array("bug_id"=>1,"descr"=>1,"entry_dtm"=>1,"status"=>1,"_id"=>1))->sort($order);
 		while ($coll->hasNext())
 		{
-			$results[] = $coll->getNext();
+			// reorg data for DataTables
+			$row = (array)$coll->getNext();
+			//var_dump($row);
+			$arr = [];
+			foreach ($olist as $i)
+			{
+				$v = $i != "" ? $row[$i] : "";
+				if ($i == "_id") $v = (string)$v;
+				if ($i == "entry_dtm") $v = date("m/d/Y g:i a",$v->sec);
+				if ($i == "status") $v = $sarr[$v];
+				$arr[] = $v;
+			}
+			$results[] = $arr;
 		}
-		return $results;
+		return array("data"=>$results);
 	}
 	
 	private function getNextSequence ($name) {
@@ -185,20 +242,21 @@ END;
 	}
 
 	// rec = record array
-	public function addWorkLog ($id, $rec)
+	public function addWorkLog ($rec)
 	{
-		$arrBug = $this->getBug($id);
+		$arrBug = $this->getBug($rec["bug_id"]);
+		//var_dump($arrBug);
 		$arrWorklogs = !empty($arrBug["worklog"]) ? $arrBug["worklog"] : array();
 		// id, bug_id, user_nm, comments, entry_dtm
 		$arrTemp = array(
-  "user_nm" => $rec["usernm"]
-, "comments" => $rec["comments"]
+  "user_nm" => $_SESSION["user_id"]
+, "comments" => $rec["wl_comments"]
 , "wl_public" => $rec["wl_public"]
 , "entry_dtm" => new MongoDate()
 );
 		$arrWorklogs[] = $arrTemp;
 		$res = $this->db->bt_bugs->update(
-			array("_id" => $arrBug["_id"])
+			array("_id" => new MongoId($arrBug["_id"]))
 			,array(
 				'$set' => array(
 					"worklog" => $arrWorklogs
@@ -206,7 +264,7 @@ END;
 			)
 		);
 		if (!$res) die("ERROR: Record not added! $sql");
-		return 1;
+		return "SUCCESS";
 	}
 
 	// idx = record index
@@ -216,13 +274,13 @@ END;
 		$arrBug = $this->getBug($id);
 		$arrWorklogs = $arrBug["worklog"];
 		$arrTemp = array(
-  "user_nm" => $rec["usernm"]
-, "comments" => $rec["comments"]
+  "user_nm" => $_SESSION["user_id"]
+, "comments" => $rec["wl_comments"]
 , "wl_public" => $rec["wl_public"]
 );
 		$arrWorklogs[$idx] = $arrTemp;
 		$res = $this->db->bt_bugs->update(
-			array("_id" => $arrBug["_id"])
+			array("_id" => new MongoId($arrBug["_id"]))
 			,array(
 				'$set' => array(
 					"worklog" => $arrWorklogs
@@ -230,6 +288,78 @@ END;
 			)
 		);
 		if ($count == 0) die("ERROR: Record not updated! $sql");
+		return "SUCCESS";
+	}
+
+	public function do_bug_email ( $args )
+	{
+		global $sarr, $parr;
+		$rec = (object)$this->getBug($args["bug_id"]);
+		if (empty($rec)) die("ERROR: Bug not found ({$args["id"]})");
+		$bt = $this->getBugTypeDescr($rec->bug_type);
+		if ($rec->user_nm != "") {
+			$arr = $this->get_user($rec->user_nm);
+			$ename = "$arr[2] $arr[1]";
+			$email = $arr[3];
+		} else $ename="";
+		if ($rec->assigned_to != "") {
+			$arr = $this->get_user($rec->assigned_to);
+			$aname = "$arr[2] $arr[1]";
+			$aemail = $arr[3];
+		} else $aname="";
+		$msg = "$msg2
+
+Details of Bug ID {$rec->bug_id}.
+
+Description: {$rec->descr}
+Product or Application: {$rec->product}
+Bug Type: $bt
+Status: {$sarr[$rec->status]}
+Priority: {$parr[$rec->priority]}
+Comments: {$rec->comments}
+Solution: {$rec->solution}
+Entry By: $ename
+Assigned To: $aname
+Entry Date/Time: {$rec->edtm}
+Update Date/Time: {$rec->udtm}
+Closed Date/Time: {$rec->cdtm}
+
+";
+		$rows = !empty($rec->worklog) ? $rec->worklog : array();
+		$msg .= count($rows)." Worklog entries found
+
+";
+		if (count($rows) > 0) {
+			foreach ($rows as $row) {
+				//list($wid,$bid,$usernm,$comments,$entry_dtm,$edtm)=$row;
+				$o = (object)$row;
+				if ($o->user_nm != "") {
+					$arr = $this->get_user($o->user_nm);
+					$ename = "$arr[2] $arr[1]";
+				} else $ename="";
+				$comments = stripcslashes($o->comments);
+				$msg .= "Date/Time: {$o->edtm}, By: $ename
+Comments: $comments
+";
+			}
+		}
+		$sendto = $args["sendto"];
+		$cc = $args["cc"];
+		$subject = $args["subject"];
+		if (!preg_match("/@/",$sendto)) $sendto.="@wilddogdesign.com";
+		if ($cc != "" and !preg_match("/@/",$cc)) $cc.="@wilddogdesign.com";
+		if ($cc != "") $ccx="CC: $cc"; else $ccx="";
+		if (1) {
+		$msg = nl2br($msg);
+		return <<<END
+To: $sendto<br>
+Subject: $subject<br>
+Headers: $ccx<br>
+Content:<br>
+$msg
+END;
+		}
+		//mail($sendto,$subject,stripcslashes($msg),$ccx);
 	}
 
 	public function getBugTypeDescr ($bug_type)

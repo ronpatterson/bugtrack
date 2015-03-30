@@ -48,7 +48,7 @@ db.bt_bugs {
         wl_public : char,
         entry_dtm : ISODate
     }],
-    attachment : [{ // array
+    attachments : [{ // array
         file_name : string,
         file_size : int32,
         file_hash : string,
