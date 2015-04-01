@@ -3,7 +3,7 @@ ini_set("display_errors", "on");
 require_once("btsession.php");
 // bugtrack.php - BugTrack main
 // Ron Patterson, WildDog Design
-// SQLite version
+// mongoDB version
 // if ($_SESSION['user_id']=="") {
 // 	die("<html><b>Not logged in!!<p><a href=login.php>Login</a></b></html>");
 // }
@@ -17,7 +17,7 @@ $uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "rlpatter";
 	<title>BugTrack</title>
 	<meta name="author" content="Ron Patterson, ASD20">
 	<link type="text/css" rel="stylesheet" href="bugtrack.css" title="bt styles">
-<link rel="stylesheet" href="/lib/scripts/css/custom-theme/jquery-ui-1.10.1.custom.css">
+<link rel="stylesheet" href="/lib/scripts/jquery/ui-1.11/jquery-ui.min.css">
 <!--
 <style type="text/css" title="currentStyle">
 	@import "/lib/scripts/DataTables/media/css/demo_page.css";
@@ -26,9 +26,9 @@ $uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "rlpatter";
 </style>
 -->
 <link rel="stylesheet" href="/lib/scripts/DataTables/DataTables-1.10.5/media/css/jquery.dataTables.css">
-<script type="text/javascript" src="/lib/scripts/jquery-1.11.2.js"></script>
-<script type="text/javascript" src="/lib/scripts/jquery-migrate-1.2.1.min.js"></script>
-<script type="text/javascript" src="/lib/scripts/jquery-ui-1.10.1.custom.min.js"></script>
+<script type="text/javascript" src="/lib/scripts/jquery/jquery-1.11.2.js"></script>
+<script type="text/javascript" src="/lib/scripts/jquery/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="/lib/scripts/jquery/ui-1.11/jquery-ui.min.js"></script>
 <script type="text/javascript" charset="utf-8" src="/lib/scripts/DataTables/DataTables-1.10.5/media/js/jquery.dataTables.js"></script>
 <script type="text/javascript" src="bugtrack2.js"></script>
 <style type="text/css">
@@ -38,7 +38,7 @@ $uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "rlpatter";
 <body background="" bgcolor="#e0e0e0">
 <center>
 <table>
-	<tr><td><img src="BugTrack.gif" alt="BugTrack"></td><td width="30">&nbsp;</td>
+	<tr><td><img src="BugTrack.gif" alt="BugTrack">Powered by <img src="mongodb-logo-web.png" alt="MongoDB" width="144" height="42"></td><td width="30">&nbsp;</td>
 	<td valign="middle"><font size="+1"><b><? echo $ttl; ?></b></font></td></tr>
 </table><br>
 <input type="hidden" name="usernm" value="<?php echo $uname ?>" id="usernm" />
