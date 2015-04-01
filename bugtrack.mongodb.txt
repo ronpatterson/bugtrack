@@ -56,6 +56,20 @@ db.bt_bugs {
     }]
 }
 
+db.bt_users {
+	"_id" : ObjectId,
+	"uid" : string,
+	"lname" : string,
+	"fname" : string,
+	"email" : string,
+	"active" : string,
+	"roles" : [
+		string
+	],
+	"pw" : string,
+	"bt_group" : string
+}
+
 // bug_type documents
 db.bt_type.insert({cd:'h',descr:'Hardware issue',active:'y'});
 db.bt_type.insert({cd:'s',descr:'Software issue',active:'y'});

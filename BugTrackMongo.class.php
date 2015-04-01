@@ -119,6 +119,8 @@ END;
 		$results["edtm"] = date("m/d/Y g:m a",$results["entry_dtm"]->sec);
 		$results["udtm"] = isset($results["update_dtm"]) ? date("m/d/Y g:m a",$results["update_dtm"]->sec) : "";
 		$results["cdtm"] = isset($results["closed_dtm"]) ? date("m/d/Y g:m a",$results["closed_dtm"]->sec) : "";
+		$urec = $this->getUserRec($results["assigned_to"]);
+		if (!empty($urec)) $results["aname"] = $urec["lname"].", ".$urec["fname"];
 		if (!empty($results["worklog"]))
 		{
 			for ($x=0; $x<count($results["worklog"]); ++$x)
@@ -139,26 +141,19 @@ END;
 	public function getBugs ($crit = array(), $order = array())
 	{
 		global $sarr;
-		$olist = array("bug_id","descr","entry_dtm","status","_id");
 		if (empty($crit)) $crit = array();
 		$results = array();
 		//var_dump($crit);
-		$coll = $this->db->bt_bugs->find($crit,array("bug_id"=>1,"descr"=>1,"entry_dtm"=>1,"status"=>1,"_id"=>1))->sort($order);
+		$coll = $this->db->bt_bugs->find($crit)->sort($order);
 		while ($coll->hasNext())
 		{
 			// reorg data for DataTables
 			$row = (array)$coll->getNext();
 			//var_dump($row);
-			$arr = [];
-			foreach ($olist as $i)
-			{
-				$v = $i != "" ? $row[$i] : "";
-				if ($i == "_id") $v = (string)$v;
-				if ($i == "entry_dtm") $v = date("m/d/Y g:i a",$v->sec);
-				if ($i == "status") $v = $sarr[$v];
-				$arr[] = $v;
-			}
-			$results[] = $arr;
+			$row["_id"] = (string)$row["_id"];
+			$row["entry_dtm"] = date("m/d/Y g:i a",$row["entry_dtm"]->sec);
+			$row["status"] = $sarr[$row["status"]];
+			$results[] = $row;
 		}
 		return array("data"=>$results);
 	}
@@ -439,21 +434,36 @@ END;
 		}
 	}
 
-	public function getUserEntries ()
+	public function getUserEntries ( $args = null )
 	{
-		$found = $this->db->bt_users->count();
-		if ($found == 0) return array(); // empty record!
-		$coll = $this->db->bt_users->find()->sort(array("lname"=>1,"fname"=>1));
+		$results = array();
+		$aCrit = array(); $aTemp = array();
+		if (!empty($args))
+		{
+			if (!empty($args["lname"]))
+				$aTemp[] = array("lname"=>array('$regex'=>new MongoRegex("/^".$args["lname"]."/i")));
+			if (!empty($args["fname"]))
+				$aTemp[] = array("fname"=>array('$regex'=>new MongoRegex("/^".$args["fname"]."/i")));
+			if (count($aTemp) == 2)
+				$aCrit = array('$and'=>$aTemp);
+			else
+				if (!empty($aTemp)) $aCrit = $aTemp[0];
+		}
+		//var_dump($aCrit);
+		$coll = $this->db->bt_users->find($aCrit)->sort(array("lname"=>1,"fname"=>1));
 		while ($coll->hasNext())
 		{
-			$results[] = $coll->getNext();
+			$rec = $coll->getNext();
+			$rec["name"] = $rec["lname"].", ".$rec["fname"];
+			$results[] = $rec;
 		}
-		return $results;
+		return array("data"=>$results);
 	}
 
 	public function getUserRec ($uid)
 	{
 		$results = $this->db->bt_users->findOne(array("uid"=>$uid));
+		$results["id"] = (string)$results["_id"];
 		return $results;
 	}
 
@@ -483,7 +493,7 @@ END;
 
 	// uid = record key
 	// rec = record array
-	public function updateUser ($oid, $rec)
+	public function updateUser ($rec)
 	{
 		extract($rec);
 		if ($pw == $pw2) $pw5 = $pw;
@@ -498,7 +508,7 @@ END;
 , "pw" => $pw5
 , "bt_group" => $bt_group
 );
-		$res = $this->db->bt_users->update(array("_id"=>new MongoId($oid)),array('$set'=>$arrTemp));
+		$res = $this->db->bt_users->update(array("_id"=>new MongoId($id)),array('$set'=>$arrTemp));
 		//var_dump($res);
 		//$count = $res["n"];
 		if (!$res) die("ERROR: Record not updated!");

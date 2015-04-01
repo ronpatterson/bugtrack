@@ -39,8 +39,8 @@ switch ($args["action"])
 		echo json_encode($results);
 		break;
 	case "getUsersSearch":
-		$results = $db->getUsersSearch($args);
-		echo $results;
+		$results = $db->getUserEntries($args);
+		echo json_encode($results);
 		break;
 	case "assign_user":
 		$results = $db->assign_user($args);
@@ -81,13 +81,13 @@ switch ($args["action"])
 		break;
 	case "admin_users":
 		$recs = $db->getUserEntries();
-		echo $recs;
+		echo json_encode($recs);
 		break;
 	case "bt_user_show":
 		if ($args["uid"] != "")
 		{
 			$recs = $db->getUserRec($args["uid"]);
-			echo $recs;
+			echo json_encode($recs);
 		}
 		else
 		{

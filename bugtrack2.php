@@ -26,11 +26,11 @@ $uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "rlpatter";
 </style>
 -->
 <link rel="stylesheet" href="/lib/scripts/DataTables/DataTables-1.10.5/media/css/jquery.dataTables.css">
-<script type="text/javascript" src="/lib/scripts/DataTables/DataTables-1.10.5/media/js/jquery.js"></script>
+<script type="text/javascript" src="/lib/scripts/jquery-1.11.2.js"></script>
+<script type="text/javascript" src="/lib/scripts/jquery-migrate-1.2.1.min.js"></script>
 <script type="text/javascript" src="/lib/scripts/jquery-ui-1.10.1.custom.min.js"></script>
 <script type="text/javascript" charset="utf-8" src="/lib/scripts/DataTables/DataTables-1.10.5/media/js/jquery.dataTables.js"></script>
 <script type="text/javascript" src="bugtrack2.js"></script>
-<script type="text/javascript" src="fieldedits.js"></script>
 <style type="text/css">
 	button:hover { font-weight: bold; }
 </style>
@@ -132,16 +132,18 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 		<label>Closed Date/Time:</label>
 		<div class="fields2"><span id="cdtm_v"></span></div><br class="clear">
 	</fieldset>
-	<p align="center">
-	<button onclick="return bt.edit_bug(event);">Edit Bug</button>
-	<button onclick="return bt.delete_bug(event);">Delete Bug</button>
-	<button onclick="return bt.show_email(event);">Email Bug</button>
-	<button onclick="return bt.add_worklog(event);">Add Worklog</button>
+	<br>
+	<div align="center" id="bt_show_buttons">
+		<span onclick="return bt.edit_bug(event);">Edit Bug</span>
+		<span onclick="return bt.delete_bug(event);">Delete Bug</span>
+		<span onclick="return bt.show_email(event);">Email Bug</span>
+		<span onclick="return bt.add_worklog(event);">Add Worklog</span>
+	</div>
+	<br>
 	<fieldset>
 	<legend>Bug Worklog</legend>
 	<div id="bt_worklog_div"></div>
 	</fieldset>
-	</p>
 </div>
 
 <div id="bugedit_div" style="text-align: left; width: 580px; display: none;">
@@ -288,7 +290,7 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 		<legend>User Add/Edit</legend>
 		<form name="bt_user_form" id="bt_user_form_id">
 		<table id="bt_user_tbl2" border="0" cellspacing="0" cellpadding="2">
-		<tr><th align="right">UID</th><td><span id="uid1"></span></td></tr>
+		<tr><th align="right">UID</th><td><input type="text" name="uid1" size="20"></td></tr>
 		<tr><th align="right">Last Name</th><td><input type="text" name="lname" value=""></td></tr>
 		<tr><th align="right">First Name</th><td><input type="text" name="fname" value=""></td></tr>
 		<tr><th align="right">Email</th><td><input type="text" name="email" size="40" value=""></td></tr>
@@ -299,6 +301,7 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 		</table>
 		<input type="submit" value="Save">
 		<input type="hidden" name="uid" value="">
+		<input type="hidden" name="id" value="">
 		</form>
 	</fieldset>
 	<div id="bt_admin_errors"></div>
