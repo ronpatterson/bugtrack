@@ -38,7 +38,7 @@ $uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "rlpatter";
 <body background="" bgcolor="#e0e0e0">
 <center>
 <table>
-	<tr><td><img src="BugTrack.gif" alt="BugTrack">Powered by <img src="mongodb-logo-web.png" alt="MongoDB" width="144" height="42"></td><td width="30">&nbsp;</td>
+	<tr><td><img src="BugTrack.gif" alt="BugTrack">Powered by <a href="http://www.mongodb.org/"><img src="mongodb-logo-web.png" alt="MongoDB" width="144" height="42"></a></td><td width="30">&nbsp;</td>
 	<td valign="middle"><font size="+1"><b><? echo $ttl; ?></b></font></td></tr>
 </table><br>
 <input type="hidden" name="usernm" value="<?php echo $uname ?>" id="usernm" />
@@ -122,7 +122,7 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 		<label>Attachments:</label>
 		<div class="fields2"><div id="filesDiv"></div> <input type="button" id="bt_assign_btn1" value="Attach File" onclick="return bt.attach_file();"></div><br class="clear">
 		<label>Entry By:</label>
-		<div class="fields2"><a href="mailto:"><span id="ename_v"></span></a></div><br class="clear">
+		<div class="fields2"><span id="ename_v"></span></div><br class="clear">
 		<label>Assigned To:</label>
 		<div class="fields2"><div id="assignedDiv1"><a href="mailto:"><span id="edit_v"></span></a></div> <input type="button" id="bt_assign_btn1" value="Assign" onclick="return bt.assign_search();"></div><br class="clear">
 		<label>Entry Date/Time:</label>
@@ -170,7 +170,7 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 		<label for="solution">Solution:</label>
 		<div class="fields2"><textarea name="solution" rows="4" cols="40" wrap="virtual"></textarea></div><br class="clear">
 		<label>Assigned To:</label>
-		<div class="fields2"><div id="assignedDiv2"></div><input type="button" id="bt_assign_btn2" value="Assign" onclick="return bt.assign_search();"></div><br class="clear">
+		<div class="fields2"><div id="assignedDiv2"></div><!--<input type="button" id="bt_assign_btn2" value="Assign" onclick="return bt.assign_search();">--></div><br class="clear">
 		<label>Entry Date/Time:</label>
 		<div class="fields2"><span id="edtm" class="bt_date"></span></div><br class="clear">
 		<label>Update Date/Time:</label>

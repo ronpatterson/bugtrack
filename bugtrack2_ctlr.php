@@ -53,8 +53,12 @@ switch ($args["action"])
 		echo json_encode($results);
 		break;
 	case "add_update":
-		$results = $db->addUpdateBug($args);
-		echo $results;
+		if ($args["id"] == "") {
+			$result = $db->addBug($args);
+		} else {
+			$result = $db->updateBug($args);
+		}
+		echo $result;
 		break;
 	case "delete":
 		$results = $db->deleteBug($args["id"]);
@@ -70,7 +74,7 @@ switch ($args["action"])
 		break;
 	case "get_files":
 		$results = $db->getBugAttachments($args["id"]);
-		echo $results;
+		echo json_encode($results);
 		break;
 	case "get_module":
 		echo file_get_contents($args["file"]);

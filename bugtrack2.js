@@ -195,7 +195,7 @@ var bt = // setup the bt namespace
 
 	edit_bug: function ( event, id )
 	{
-		var id2 = $('#bug_id').val();
+		var id2 = $('#bid').val();
 		if (id) id2 = id;
 		//alert('edit_bug '+id2);
 		var params = "action=edit&id="+id2;
@@ -211,6 +211,7 @@ var bt = // setup the bt namespace
 				bt.showDialogDiv('BugTrack Edit '+data.bug_id,'bugedit_div');
 				$('#bugedit_errors').html('');
 				$('#bugedit_id').html(data.bug_id);
+				$('#oldstatus').val(data.status);
 				var grp = data.bug_id.replace(/\d+$/,'');
 				$('select[name="bt_group"]').val(grp);
 				$('input[name="descr"]').val(data.descr);
@@ -253,9 +254,9 @@ var bt = // setup the bt namespace
 				//console.log(data);
 				var group_cd = data.bug_id.replace(/\d+$/,'');
 				$('#bt_admin_errors').html('');
-				$('#bug_id').val(id);
+				$('#bug_id').val(data.bug_id);
 				$('#bug_id2_v').html(data.bug_id);
-				$('#bid').val(data.id);
+				$('#bid').val(id);
 				$('#descr_v').html(data.descr);
 				$('#product_v').html(data.product);
 				$('#bt_v').html(bt.get_lookup(bt.group_data.bt_groups,group_cd));
@@ -401,7 +402,7 @@ var bt = // setup the bt namespace
 	
 	assign_user: function ( event, user )
 	{
-		var id = $('#bug_id').val();
+		var id = $('#bid').val();
 		var params = 'action=assign_user';
 		params += '&id='+id;
 		params += '&uid='+user;

@@ -119,8 +119,12 @@ END;
 		$results["edtm"] = date("m/d/Y g:m a",$results["entry_dtm"]->sec);
 		$results["udtm"] = isset($results["update_dtm"]) ? date("m/d/Y g:m a",$results["update_dtm"]->sec) : "";
 		$results["cdtm"] = isset($results["closed_dtm"]) ? date("m/d/Y g:m a",$results["closed_dtm"]->sec) : "";
-		$urec = $this->getUserRec($results["assigned_to"]);
-		if (!empty($urec)) $results["aname"] = $urec["lname"].", ".$urec["fname"];
+		$results["aname"] = "";
+		if (!empty($results["assigned_to"]))
+		{
+			$urec = $this->getUserRec($results["assigned_to"]);
+			if (!empty($urec)) $results["aname"] = $urec["lname"].", ".$urec["fname"];
+		}
 		if (!empty($results["worklog"]))
 		{
 			for ($x=0; $x<count($results["worklog"]); ++$x)
@@ -203,10 +207,8 @@ END;
 		return (string)$iid.",".$bug_id;
 	}
 
-	// idx = record index
 	// rec = record array
-	// closed = boolean
-	public function updateBug ($idx, $rec, $closed)
+	public function updateBug ($rec)
 	{
 		extract($rec);
 		$arrTemp = array(
@@ -220,9 +222,9 @@ END;
 //, "assigned_to" => $assigned_to
 , "update_dtm" => new MongoDate()
 );
-		if ($closed)
+		if (isset($closed))
 			$arrTemp["closed_dtm"] = new MongoDate();
-		$res = $this->db->bt_bugs->update(array("_id"=>new MongoId($idx)),array('$set'=>$arrTemp));
+		$res = $this->db->bt_bugs->update(array("_id"=>new MongoId($id)),array('$set'=>$arrTemp));
 		//$count = $res["n"];
 		if (!$res) die("ERROR: Record not updated!");
 	}
@@ -289,20 +291,20 @@ END;
 	public function do_bug_email ( $args )
 	{
 		global $sarr, $parr;
-		$rec = (object)$this->getBug($args["bug_id"]);
+		$rec = (object)$this->getBug($args["id"]);
 		if (empty($rec)) die("ERROR: Bug not found ({$args["id"]})");
 		$bt = $this->getBugTypeDescr($rec->bug_type);
 		if ($rec->user_nm != "") {
-			$arr = $this->get_user($rec->user_nm);
-			$ename = "$arr[2] $arr[1]";
-			$email = $arr[3];
+			$arr = $this->getUserRec($rec->user_nm);
+			$ename = "{$arr["lname"]}, {$arr["fname"]}";
+			$email = $arr["email"];
 		} else $ename="";
-		if ($rec->assigned_to != "") {
-			$arr = $this->get_user($rec->assigned_to);
-			$aname = "$arr[2] $arr[1]";
-			$aemail = $arr[3];
+		if (!empty($rec->assigned_to)) {
+			$arr = $this->getUserRec($rec->assigned_to);
+			$aname = "{$arr["lname"]}, {$arr["fname"]}";
+			$aemail = $arr["email"];
 		} else $aname="";
-		$msg = "$msg2
+		$msg = "{$args["msg2"]}
 
 Details of Bug ID {$rec->bug_id}.
 
@@ -329,8 +331,8 @@ Closed Date/Time: {$rec->cdtm}
 				//list($wid,$bid,$usernm,$comments,$entry_dtm,$edtm)=$row;
 				$o = (object)$row;
 				if ($o->user_nm != "") {
-					$arr = $this->get_user($o->user_nm);
-					$ename = "$arr[2] $arr[1]";
+					$arr = $this->getUserRec($o->user_nm);
+					$ename = "{$arr["lname"]}, {$arr["fname"]}";
 				} else $ename="";
 				$comments = stripcslashes($o->comments);
 				$msg .= "Date/Time: {$o->edtm}, By: $ename
