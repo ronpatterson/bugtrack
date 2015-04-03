@@ -116,9 +116,9 @@ END;
 		$results["_id"] = (string)$results["_id"];
 		$results["status_descr"] = $sarr[$results["status"]];
 		$results["priority_descr"] = $parr[$results["priority"]];
-		$results["edtm"] = date("m/d/Y g:m a",$results["entry_dtm"]->sec);
-		$results["udtm"] = isset($results["update_dtm"]) ? date("m/d/Y g:m a",$results["update_dtm"]->sec) : "";
-		$results["cdtm"] = isset($results["closed_dtm"]) ? date("m/d/Y g:m a",$results["closed_dtm"]->sec) : "";
+		$results["edtm"] = date("m/d/Y g:i a",$results["entry_dtm"]->sec);
+		$results["udtm"] = isset($results["update_dtm"]) ? date("m/d/Y g:i a",$results["update_dtm"]->sec) : "";
+		$results["cdtm"] = isset($results["closed_dtm"]) ? date("m/d/Y g:i a",$results["closed_dtm"]->sec) : "";
 		$results["aname"] = "";
 		if (!empty($results["assigned_to"]))
 		{
@@ -129,14 +129,14 @@ END;
 		{
 			for ($x=0; $x<count($results["worklog"]); ++$x)
 			{
-				$results["worklog"][$x]["edtm"] = date("m/d/Y g:m a",$results["worklog"][$x]["entry_dtm"]->sec);
+				$results["worklog"][$x]["edtm"] = date("m/d/Y g:i a",$results["worklog"][$x]["entry_dtm"]->sec);
 			}
 		}
 		if (!empty($results["attachments"]))
 		{
 			for ($x=0; $x<count($results["attachments"]); ++$x)
 			{
-				$results["attachments"][$x]["edtm"] = date("m/d/Y g:m a",$results["attachments"][$x]["entry_dtm"]->sec);
+				$results["attachments"][$x]["edtm"] = date("m/d/Y g:i a",$results["attachments"][$x]["entry_dtm"]->sec);
 			}
 		}
 		return $results;
@@ -516,13 +516,13 @@ END;
 		if (!$res) die("ERROR: Record not updated!");
 	}
 	
-	public function assign_user ($id, $uid)
+	public function assign_user ($args)
 	{
 		$arrTemp = array(
-  "assigned_to" => $uid
-, "update_dtm" => new MongoDate()
+  "assigned_to" => $args["uid"]
+, "update_dtm" => new MongoDate(time())
 );
-		$this->db->bt_bugs->update(array("_id"=>new MongoId($id)),array('$set'=>$arrTemp));
+		$this->db->bt_bugs->update(array("_id" => new MongoId($args["id"])),array('$set' => $arrTemp));
 		return "Assignment done";
 	}
 	
