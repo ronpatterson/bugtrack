@@ -477,15 +477,6 @@ var bt = // setup the bt namespace
 		return false;
 	},
 
-	show_email: function ( event ) {
-		bt.showDialogDiv('BugTrack Email','bt_email_div');
-		$('#bug_id_email').html($('#bug_id2_v').text());
-		$('#descr_email').html($('#descr_v').html());
-		$('input[name="subject"]').val($('#bug_id2_v').text()+' - '+$('#descr_v').html());
-		$('#email_errors').html('');
-		return true;
-	},
-	
 	get_files: function ( event )
 	{
 		$('#filesDiv').empty();
@@ -543,7 +534,26 @@ var bt = // setup the bt namespace
 		return false;
 	},
 
+	show_email: function ( event ) {
+		bt.showDialogDiv('BugTrack Email','bt_email_div');
+		$('#bug_id_email').html($('#bug_id2_v').text());
+		$('#descr_email').html($('#descr_v').html());
+		$('input[name="subject"]').val($('#bug_id2_v').text()+' - '+$('#descr_v').html());
+		$('#email_errors').html('');
+		return true;
+	},
+	
 	email_bug: function (e) {
+		var err = '';
+		if ($.trim($('input[name="sendto"]').val()) == '')
+			err += ' - Send To must not be blank<br>';
+		if ($.trim($('input[name="subject"]').val()) == '')
+			err += ' - Subject must not be blank<br>';
+		if (err != '')
+		{
+			$('#email_errors').html('Errors encountered:<br>'+err);
+			return false;
+		}
 		var params = 'action=email_bug';
 		params += '&id='+$('#bid').val();
 		params += '&bug_id='+$('#bug_id').val();

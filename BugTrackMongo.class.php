@@ -142,13 +142,18 @@ END;
 		return $results;
 	}
 
-	public function getBugs ($crit = array(), $order = array())
+	public function getBugs ($type = "", $crit = array())
 	{
 		global $sarr;
-		if (empty($crit)) $crit = array();
 		$results = array();
+		$aCrit = array(); $aTemp = array();
+		if (!empty($crit))
+		{
+			if (count($crit) > 1)
+				$aCrit = array('$and'=>$crit);
+		}
 		//var_dump($crit);
-		$coll = $this->db->bt_bugs->find($crit)->sort($order);
+		$coll = $this->db->bt_bugs->find($crit);
 		while ($coll->hasNext())
 		{
 			// reorg data for DataTables
