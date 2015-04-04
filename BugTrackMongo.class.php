@@ -379,6 +379,7 @@ END;
 
 	public function getBugAttachments ($id) {
 		$arrBug = $this->getBug($id);
+		//var_dump($arrBug);
 		$arrAttachments = !empty($arrBug["attachments"]) ? $arrBug["attachments"] : array();
 		return $arrAttachments;
 	}
@@ -400,7 +401,7 @@ END;
 );
 		$arrAttachments[] = $arrTemp;
 		$res = $this->db->bt_bugs->update(
-			array("_id" => $arrBug["_id"])
+			array("_id" => new MongoId($id))
 			,array(
 				'$set' => array(
 					"attachments" => $arrAttachments

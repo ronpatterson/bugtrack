@@ -269,7 +269,7 @@ var bt = // setup the bt namespace
 				$('#edtm_v').html(data.edtm);
 				$('#udtm_v').html(data.udtm);
 				$('#cdtm_v').html(data.cdtm);
-				//bt.get_files(event,data);
+				bt.get_files(event);
 				bt.worklog_show(event,data);
 			}
 		});
@@ -497,7 +497,8 @@ var bt = // setup the bt namespace
 				{
 					$.each(data,function (i)
 					{
-						out += '<a href="get_file.php?id='+data[i].id+'" target="_blank">'+data[i].file_name+'</a> ('+data[i].file_size+') <span onclick="return remove_file('+data[i].id+');">Remove</span><br>';
+						var id = $('#bid').val();
+						out += '<a href="get_file.php?id='+id+'&idx='+i+'" target="_blank">'+data[i].file_name+'</a> ('+data[i].file_size+') <span onclick="return remove_file('+id+','+i+');">Remove</span><br>';
 					});
 				}
 				$('#filesDiv').html(out);
