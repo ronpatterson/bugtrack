@@ -119,6 +119,12 @@ END;
 		$results["edtm"] = date("m/d/Y g:i a",$results["entry_dtm"]->sec);
 		$results["udtm"] = isset($results["update_dtm"]) ? date("m/d/Y g:i a",$results["update_dtm"]->sec) : "";
 		$results["cdtm"] = isset($results["closed_dtm"]) ? date("m/d/Y g:i a",$results["closed_dtm"]->sec) : "";
+		$results["ename"] = "";
+		if (!empty($results["user_nm"]))
+		{
+			$urec = $this->getUserRec($results["user_nm"]);
+			if (!empty($urec)) $results["ename"] = $urec["lname"].", ".$urec["fname"];
+		}
 		$results["aname"] = "";
 		if (!empty($results["assigned_to"]))
 		{

@@ -265,7 +265,7 @@ var bt = // setup the bt namespace
 				$('#assignedDiv1').html(data.aname);
 				$('#comments_v').html(data.comments);
 				$('#solution_v').html(data.solution);
-				$('#ename_v').html(data.user_nm);
+				$('#ename_v').html(data.ename);
 				$('#edtm_v').html(data.edtm);
 				$('#udtm_v').html(data.udtm);
 				$('#cdtm_v').html(data.cdtm);
