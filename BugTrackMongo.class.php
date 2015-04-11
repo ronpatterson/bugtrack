@@ -104,6 +104,7 @@ END;
 		$results["bt_types"] = $results2;
 		$results["bt_status"] = $sarr;
 		$results["bt_priority"] = $parr;
+		$results["roles"] = $_SESSION["roles"];
 		return json_encode($results);
 	}
 
@@ -494,7 +495,7 @@ END;
 , "fname" => $fname
 , "email" => $email
 , "active" => $active
-, "roles" => $roles
+, "roles" => array($roles)
 , "pw" => $pw5
 , "bt_group" => $bt_group
 );
@@ -518,7 +519,7 @@ END;
 , "fname" => $fname
 , "email" => $email
 , "active" => $active
-, "roles" => $roles
+, "roles" => array($roles)
 , "pw" => $pw5
 , "bt_group" => $bt_group
 );
@@ -569,6 +570,7 @@ END;
 		$_SESSION["user_id"] = $uid;
 		$_SESSION["user_nm"] = $row["fname"]." ".$row["lname"];
 		$_SESSION["email"] = $row["email"];
+		//$_SESSION["roles"] = $row["roles"];
 		$_SESSION["roles"] = join(",",$row["roles"]);
 		$_SESSION["group"] = $row["bt_group"];
 		echo json_encode($row);
