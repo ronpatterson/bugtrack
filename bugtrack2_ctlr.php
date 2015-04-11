@@ -19,13 +19,13 @@ switch ($args["action"])
 {
 	case "bt_init":
 		$results = $db->getBTlookups();
-		echo $results;
+		echo json_encode($results);
 		break;
 	case "bt_check_session":
 		echo $db->check_session();
 		break;
 	case "bt_login_handler":
-		echo $db->login_session($args["uid"],$args["pw"]);
+		echo json_encode($db->login_session($args["uid"],$args["pw"]));
 		//print_r($_SESSION);
 		break;
 	case "bt_logout_handler":

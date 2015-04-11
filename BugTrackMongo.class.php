@@ -105,7 +105,7 @@ END;
 		$results["bt_status"] = $sarr;
 		$results["bt_priority"] = $parr;
 		$results["roles"] = $_SESSION["roles"];
-		return json_encode($results);
+		return $results;
 	}
 
 	public function getBug ($id)
@@ -573,7 +573,7 @@ END;
 		//$_SESSION["roles"] = $row["roles"];
 		$_SESSION["roles"] = join(",",$row["roles"]);
 		$_SESSION["group"] = $row["bt_group"];
-		echo json_encode($row);
+		echo $row;
 	}
 
 	public function getHandle ()
