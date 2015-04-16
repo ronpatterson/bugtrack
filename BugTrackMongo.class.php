@@ -573,7 +573,7 @@ END;
 		//$_SESSION["roles"] = $row["roles"];
 		$_SESSION["roles"] = join(",",$row["roles"]);
 		$_SESSION["group"] = $row["bt_group"];
-		echo $row;
+		return $row;
 	}
 
 	public function getHandle ()
