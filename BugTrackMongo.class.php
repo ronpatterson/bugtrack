@@ -84,7 +84,7 @@ END;
 		return "";
 	}
 
-	public function getBTlookups ()
+	public function getBTlookupsx ()
 	{
 		global $sarr,$parr;
 		$results = array();
@@ -104,10 +104,32 @@ END;
 		$results["bt_types"] = $results2;
 		$results["bt_status"] = $sarr;
 		$results["bt_priority"] = $parr;
-		$results["roles"] = $_SESSION["roles"];
+		$results["roles"] = isset($_SESSION["roles"]) ? $_SESSION["roles"] : "";
 		return $results;
 	}
 
+	public function getBTlookups ()
+	{
+		$results = array();
+		$coll = $this->db->bt_lookups->find(array(),array("_id"=>0));
+		while ($coll->hasNext())
+		{
+			$lu = $coll->getNext();
+		}
+		foreach (array("bt_type","bt_group","bt_status","bt_priority") as $type)
+		{
+			$arr = array();
+			foreach ($lu[$type] as $item)
+			{
+				if ($item["active"] != "y") continue;
+				$arr[] = array("cd"=>$item["cd"],"descr"=>$item["descr"]);
+			}
+			//sort($arr);
+			$results[$type] = $arr;
+		}
+		return $results;
+	}
+	
 	public function getBug ($id)
 	{
 		global $sarr, $parr;

@@ -261,7 +261,7 @@ var bt = // setup the bt namespace
 				$('#bid').val(id);
 				$('#descr_v').html(data.descr);
 				$('#product_v').html(data.product);
-				$('#bt_v').html(bt.get_lookup(bt.group_data.bt_groups,group_cd));
+				$('#bt_v').html(bt.get_lookup(bt.group_data.bt_group,group_cd));
 				$('#status_v').html(data.status_descr);
 				$('#priority_v').html(data.priority_descr);
 				$('#assignedDiv1').html(data.aname);
@@ -797,12 +797,13 @@ var bt = // setup the bt namespace
 	 */
 	build_selection: function ( name, data )
 	{
+		//debugger;
 		var obj = $('<select></select>').attr('name',name);
 		var opt = $('<option></option>').attr('value','').html('--Select One--');
 		obj.append(opt);
-		for (i in data)
+		for (var i=0; i<data.length; ++i)
 		{
-			if (typeof(data.length) == 'undefined')
+			if (typeof(data[i]) != 'object')
 				rec = { 'cd': i, 'descr': data[i] };
 			else
 				rec = data[i];
@@ -857,17 +858,17 @@ var bt = // setup the bt namespace
 			{
 				//console.log(data);
 				bt.group_data = data;
-				var sel = bt.build_selection('bt_group',data.bt_groups);
+				var sel = bt.build_selection('bt_group',data.bt_group);
 				$('#bt_groups').empty().append(sel);
-				var sel = bt.build_selection('bt_group',data.bt_groups);
+				var sel = bt.build_selection('bt_group',data.bt_group);
 				$('#bt_grp').empty().append(sel);
-				var sel = bt.build_selection('bug_type',data.bt_types);
+				var sel = bt.build_selection('bug_type',data.bt_type);
 				$('#btypes_s').empty().append(sel);
 				var sel = bt.build_selection('status',data.bt_status);
 				$('#status_s').empty().append(sel);
 				var sel = bt.build_selection('priority',data.bt_priority);
 				$('#priority_s').empty().append(sel);
-				var sel = bt.build_selection('bug_type2',data.bt_types);
+				var sel = bt.build_selection('bug_type2',data.bt_type);
 				$('#btc_types').empty().append(sel);
 				var sel = bt.build_selection('status2',data.bt_status);
 				$('#btc_status').empty().append(sel);
