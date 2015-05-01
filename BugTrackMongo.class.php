@@ -127,6 +127,7 @@ END;
 			//sort($arr);
 			$results[$type] = $arr;
 		}
+		$results["roles"] = isset($_SESSION["roles"]) ? $_SESSION["roles"] : "";
 		return $results;
 	}
 	

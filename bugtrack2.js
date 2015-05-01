@@ -8,7 +8,7 @@ var bt = // setup the bt namespace
 	URL: 'bugtrack2_ctlr.php',
 	login_content: { 'uid': 'rlpatter' },
 	stimer: 0,
-	group_def: 'WDD',
+	group_def: 'WDD', // default group
 	group_data: {},
 
 	check_session: function (event)
@@ -139,7 +139,7 @@ var bt = // setup the bt namespace
 
 	buglist2: function ( event, type, sel_arg )
 	{
-		console.log(event,type,sel_arg);
+		//console.log(event,type,sel_arg);
 		var params = {
 			'action': 'list2',
 			'type': type,

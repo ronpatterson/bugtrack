@@ -3,7 +3,7 @@ ini_set("display_errors", "on");
 require_once("btsession.php");
 // bugtrack_ctlr.php - BugTrack controller
 // Ron Patterson, WildDog Design
-// SQLite version
+// MongoDB version
 // if ($_SESSION['user_id']=="") {
 // 	die("<html><b>Not logged in!!<p><a href=login.php>Login</a></b></html>");
 // }
@@ -88,15 +88,8 @@ switch ($args["action"])
 		echo json_encode($recs);
 		break;
 	case "bt_user_show":
-		if ($args["uid"] != "")
-		{
-			$recs = $db->getUserRec($args["uid"]);
-			echo json_encode($recs);
-		}
-		else
-		{
-			$rec = "";
-		}
+		$recs = $db->getUserRec($args["uid"]);
+		echo json_encode($recs);
 		break;
 	case "user_add_update":
 		if ($args["uid"] == "") {
