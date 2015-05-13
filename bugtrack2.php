@@ -1,4 +1,8 @@
 <?php
+// bugtrack2.php
+//
+// Ron Patterson, WildDog Design/BPWC
+
 ini_set("display_errors", "on");
 require_once("btsession.php");
 // bugtrack.php - BugTrack main
