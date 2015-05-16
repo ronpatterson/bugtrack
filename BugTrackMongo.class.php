@@ -21,6 +21,7 @@ class BugTrack {
 	protected $db;
 	protected $adir = "/usr/local/data/";
 	protected $collsArray = array();
+	protected $lookups = array();
 	
 	public function __construct ( $dbpath )
 	{
@@ -38,6 +39,7 @@ class BugTrack {
 			//header("Location: /dberror.html");
 			exit;
 		}
+		$this->lookups = $this->getBTlookups();
 	}
 	
 	public function __destruct ()
@@ -84,7 +86,7 @@ END;
 		return "";
 	}
 
-	public function getBTlookupsx ()
+	public function getBTlookupsOLD ()
 	{
 		global $sarr,$parr;
 		$results = array();
@@ -131,15 +133,24 @@ END;
 		return $results;
 	}
 	
+	public function getBTlookup ( $type, $cd )
+	{
+		$arr = $this->lookups[$type];
+		for ($x=0; $x<count($arr); ++$x)
+		{
+			if ($arr[$x]["cd"] === $cd) return $arr[$x]["descr"];
+		}
+		return null;
+	}
+	
 	public function getBug ($id)
 	{
-		global $sarr, $parr;
 		// id, descr, product, user_nm, bug_type, status, priority, comments, solution, assigned_to, bug_id, entry_dtm, update_dtm, closed_dtm,worklog,attachments
 		$results = $this->db->bt_bugs->findOne(array("_id"=>new MongoId($id)));
 		if (empty($results)) return array(); // empty record!
 		$results["_id"] = (string)$results["_id"];
-		$results["status_descr"] = $sarr[$results["status"]];
-		$results["priority_descr"] = $parr[$results["priority"]];
+		$results["status_descr"] = $this->getBTlookup("bt_status",$results["status"]);
+		$results["priority_descr"] = $this->getBTlookup("bt_priority",$results["priority"]);
 		$results["edtm"] = date("m/d/Y g:i a",$results["entry_dtm"]->sec);
 		$results["udtm"] = isset($results["update_dtm"]) ? date("m/d/Y g:i a",$results["update_dtm"]->sec) : "";
 		$results["cdtm"] = isset($results["closed_dtm"]) ? date("m/d/Y g:i a",$results["closed_dtm"]->sec) : "";
@@ -174,7 +185,6 @@ END;
 
 	public function getBugs ($type = "", $crit = array())
 	{
-		global $sarr;
 		$results = array();
 		$aCrit = array(); $aTemp = array();
 		if (!empty($crit))
@@ -191,7 +201,7 @@ END;
 			//var_dump($row);
 			$row["_id"] = (string)$row["_id"];
 			$row["entry_dtm"] = date("m/d/Y g:i a",$row["entry_dtm"]->sec);
-			$row["status"] = $sarr[$row["status"]];
+			$row["status"] = $this->getBTlookup("bt_status",$row["status"]);
 			$results[] = $row;
 		}
 		return array("data"=>$results);
@@ -276,7 +286,7 @@ END;
 	// rec = record array
 	public function addWorkLog ($rec)
 	{
-		$arrBug = $this->getBug($rec["bug_id"]);
+		$arrBug = $this->getBug($rec["id"]);
 		//var_dump($arrBug);
 		$arrWorklogs = !empty($arrBug["worklog"]) ? $arrBug["worklog"] : array();
 		// id, bug_id, user_nm, comments, entry_dtm
@@ -339,6 +349,8 @@ END;
 			$aname = "{$arr["lname"]}, {$arr["fname"]}";
 			$aemail = $arr["email"];
 		} else $aname="";
+		$status = getBTlookup("bt_status",$rec->status);
+		$priority = getBTlookup("bt_priority",$rec->priority);
 		$msg = "{$args["msg2"]}
 
 Details of Bug ID {$rec->bug_id}.
@@ -346,8 +358,8 @@ Details of Bug ID {$rec->bug_id}.
 Description: {$rec->descr}
 Product or Application: {$rec->product}
 Bug Type: $bt
-Status: {$sarr[$rec->status]}
-Priority: {$parr[$rec->priority]}
+Status: {$status}
+Priority: {$priority}
 Comments: {$rec->comments}
 Solution: {$rec->solution}
 Entry By: $ename

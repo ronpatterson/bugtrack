@@ -462,8 +462,9 @@ var bt = // setup the bt namespace
 			{
 				if (/^SUCCESS/.test(response))
 				{
-					bt.worklog_show();
 					$('#bt_worklog_form').dialog('close');
+					$('#bugshow_div').dialog('close');
+					window.setTimeout(function(){bt.bugshow(event,id);},200);
 				}
 				else
 					$('#wl_errors').html(response);
