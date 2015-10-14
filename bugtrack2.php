@@ -14,6 +14,7 @@ require_once("btsession.php");
 date_default_timezone_set('America/Denver');
 $ttl = "BugTrack";
 $uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "rlpatter";
+$uid = (isset($_SESSION["user_id"])) ? $_SESSION["user_id"] : "rlpatter";
 $roles = (isset($_SESSION["roles"])) ? $_SESSION["roles"] : "";
 //print_r($_SESSION);
 ?>
@@ -23,7 +24,7 @@ $roles = (isset($_SESSION["roles"])) ? $_SESSION["roles"] : "";
 	<title>BugTrack</title>
 	<meta name="author" content="Ron Patterson, ASD20">
 	<link type="text/css" rel="stylesheet" href="bugtrack.css" title="bt styles">
-<link rel="stylesheet" href="/lib/scripts/jquery/ui-1.11/jquery-ui.min.css">
+	<link rel="stylesheet" href="//cdn.datatables.net/1.10.9/css/jquery.dataTables.min.css">
 <!--
 <style type="text/css" title="currentStyle">
 	@import "/lib/scripts/DataTables/media/css/demo_page.css";
@@ -31,11 +32,11 @@ $roles = (isset($_SESSION["roles"])) ? $_SESSION["roles"] : "";
     @import "/lib/scripts/DataTables/media/css/jquery.dataTables.css";
 </style>
 -->
-<link rel="stylesheet" href="/lib/scripts/DataTables/DataTables-1.10.5/media/css/jquery.dataTables.css">
-<script type="text/javascript" src="/lib/scripts/jquery/jquery-1.11.2.js"></script>
-<script type="text/javascript" src="/lib/scripts/jquery/jquery-migrate-1.2.1.min.js"></script>
-<script type="text/javascript" src="/lib/scripts/jquery/ui-1.11/jquery-ui.min.js"></script>
-<script type="text/javascript" charset="utf-8" src="/lib/scripts/DataTables/DataTables-1.10.5/media/js/jquery.dataTables.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script type="text/javascript" charset="utf-8" src="//cdn.datatables.net/1.10.9/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="bugtrack2.js"></script>
 <style type="text/css">
 	button:hover { font-weight: bold; }
@@ -45,9 +46,10 @@ $roles = (isset($_SESSION["roles"])) ? $_SESSION["roles"] : "";
 <center>
 <table>
 	<tr><td><img src="BugTrack.gif" alt="BugTrack">Powered by <a href="http://www.mongodb.org/"><img src="mongodb-logo-web.png" alt="MongoDB" width="144" height="42"></a></td><td width="30">&nbsp;</td>
-	<td valign="middle"><font size="+1"><b><? echo $ttl; ?></b></font></td></tr>
+	<td valign="middle"><font size="+1"><b><!-- echo $ttl; --></b></font></td></tr>
 </table><br>
 <input type="hidden" name="usernm" value="<?php echo $uname ?>" id="usernm" />
+<input type="hidden" name="userid" value="<?php echo $uid ?>" id="userid" />
 <input type="hidden" name="bid" id="bid" value="">
 <input type="hidden" name="bug_id" id="bug_id" value="">
 <?php
@@ -106,91 +108,92 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 	</center>
 </div>
 
-<div id="bugshow_div" class="bugform" style="display: none;">
-	<fieldset>
-		<legend>BugTrack Record</legend>
-		<label>ID:</label>
-		<div class="fields2"><span id="bug_id2_v"><span></div><br class="clear">
-		<label>Description:</label>
-		<div class="fields2"><span id="descr_v"></span></div><br class="clear">
-		<label>Product or Application:</label>
-		<div class="fields2"><span id="product_v"</span></div><br class="clear">
-		<label>Bug Type:</label>
-		<div class="fields2"><span id="bt_v"></span></div><br class="clear">
-		<label>Status:</label>
-		<div class="fields2"><span id="status_v"></span></div><br class="clear">
-		<label>Priority:</label>
-		<div class="fields2"><span id="priority_v"></span></div><br class="clear">
-		<label>Comments:</label>
-		<div class="fields2"><span id="comments_v"></span></div><br class="clear">
-		<label>Solution:</label>
-		<div class="fields2"><span id="solution_v"></span></div><br class="clear">
-		<label>Attachments:</label>
-		<div class="fields2"><div id="filesDiv"></div> <input type="button" id="bt_assign_btn1" value="Attach File" onclick="return bt.attach_file();"></div><br class="clear">
-		<label>Entry By:</label>
-		<div class="fields2"><span id="ename_v"></span></div><br class="clear">
-		<label>Assigned To:</label>
-		<div class="fields2"><div id="assignedDiv1"><a href="mailto:"><span id="edit_v"></span></a></div> <input type="button" id="bt_assign_btn1" value="Assign" onclick="return bt.assign_search();"></div><br class="clear">
-		<label>Entry Date/Time:</label>
-		<div class="fields2"><span id="edtm_v"></span></div><br class="clear">
-		<label>Update Date/Time:</label>
-		<div class="fields2"><span id="udtm_v"></span></div><br class="clear">
-		<label>Closed Date/Time:</label>
-		<div class="fields2"><span id="cdtm_v"></span></div><br class="clear">
-	</fieldset>
-	<br>
-	<div align="center" id="bt_show_buttons">
-		<span onclick="return bt.edit_bug(event);">Edit Bug</span>
-		<span onclick="return bt.delete_bug(event);">Delete Bug</span>
-		<span onclick="return bt.show_email(event);">Email Bug</span>
-		<span onclick="return bt.add_worklog(event);">Add Worklog</span>
+<div id="bt_bugs_show_edit" style="display: none;">
+	<div id="bugshow_div" class="bugform" style="display: none;">
+		<fieldset>
+			<legend>BugTrack Record</legend>
+			<label>ID:</label>
+			<div class="fields2"><span id="bug_id2_v"><span></div><br class="clear">
+			<label>Description:</label>
+			<div class="fields2"><span id="descr_v"></span></div><br class="clear">
+			<label>Product or Application:</label>
+			<div class="fields2"><span id="product_v"</span></div><br class="clear">
+			<label>Bug Type:</label>
+			<div class="fields2"><span id="bt_v"></span></div><br class="clear">
+			<label>Status:</label>
+			<div class="fields2"><span id="status_v"></span></div><br class="clear">
+			<label>Priority:</label>
+			<div class="fields2"><span id="priority_v"></span></div><br class="clear">
+			<label>Comments:</label>
+			<div class="fields2"><span id="comments_v"></span></div><br class="clear">
+			<label>Solution:</label>
+			<div class="fields2"><span id="solution_v"></span></div><br class="clear">
+			<label>Attachments:</label>
+			<div class="fields2"><div id="filesDiv"></div> <input type="button" id="bt_assign_btn1" value="Attach File" onclick="return bt.attach_file();"></div><br class="clear">
+			<label>Entry By:</label>
+			<div class="fields2"><span id="ename_v"></span></div><br class="clear">
+			<label>Assigned To:</label>
+			<div class="fields2"><div id="assignedDiv1"><a href="mailto:"><span id="edit_v"></span></a></div> <input type="button" id="bt_assign_btn1" value="Assign" onclick="return bt.assign_search();"></div><br class="clear">
+			<label>Entry Date/Time:</label>
+			<div class="fields2"><span id="edtm_v"></span></div><br class="clear">
+			<label>Update Date/Time:</label>
+			<div class="fields2"><span id="udtm_v"></span></div><br class="clear">
+			<label>Closed Date/Time:</label>
+			<div class="fields2"><span id="cdtm_v"></span></div><br class="clear">
+		</fieldset>
+		<br>
+		<div align="center" id="bt_show_buttons">
+			<span onclick="return bt.edit_bug(event);">Edit Bug</span>
+			<span onclick="return bt.delete_bug(event);">Delete Bug</span>
+			<span onclick="return bt.show_email(event);">Email Bug</span>
+			<span onclick="return bt.add_worklog(event);">Add Worklog</span>
+		</div>
+		<br>
+		<fieldset>
+		<legend>Bug Worklog</legend>
+		<div id="bt_worklog_div"></div>
+		</fieldset>
 	</div>
-	<br>
-	<fieldset>
-	<legend>Bug Worklog</legend>
-	<div id="bt_worklog_div"></div>
-	</fieldset>
-</div>
-
-<div id="bugedit_div" style="text-align: left; width: 580px; display: none;">
-	<form name="bt_form1" id="bugedit_form1"><br>
-	<input type="hidden" name="oldstatus" id="oldstatus" value="">
-	<fieldset>
-		<legend> BugTrack Record </legend>
-		<label>ID:</label>
-		<div class="fields2"><span id="bugedit_id"</span></div><br class="clear">
-		<label for="group"><span class="required">*</span>Group:</label>
-		<div class="fields2"><span id="bt_grp"></span></div><br class="clear">
-		<label for="descr"><span class="required">*</span>Description:</label>
-		<div class="fields2"><input type="text" name="descr" size="40" value=""></div><br class="clear">
-		<label for="product"><span class="required">*</span>Product or Application:</label>
-		<div class="fields2"><input type="text" name="product" size="40" value=""></div><br class="clear">
-		<label for="bug_type"><span class="required">*</span>Bug Type:</label>
-		<div class="fields2"><span id="btypes_s"></span></div><br class="clear">
-		<label for="status">Status:</label>
-		<div class="fields2"><span id="status_s"></span></div><br class="clear">
-		<label for="priority"><span class="required">*</span>Priority:</label>
-		<div class="fields2"><span id="priority_s"></span></div><br class="clear">
-		<label for="comments"><span class="required">*</span>Comments:</label>
-		<div class="fields2"><textarea name="comments" rows="4" cols="40" wrap="virtual"></textarea></div><br class="clear">
-		<label for="solution">Solution:</label>
-		<div class="fields2"><textarea name="solution" rows="4" cols="40" wrap="virtual"></textarea></div><br class="clear">
-		<label>Assigned To:</label>
-		<div class="fields2"><div id="assignedDiv2"></div><!--<input type="button" id="bt_assign_btn2" value="Assign" onclick="return bt.assign_search();">--></div><br class="clear">
-		<label>Entry Date/Time:</label>
-		<div class="fields2"><span id="edtm" class="bt_date"></span></div><br class="clear">
-		<label>Update Date/Time:</label>
-		<div class="fields2"><span id="udtm" class="bt_date"></span></div><br class="clear">
-		<label>Closed Date/Time:</label>
-		<div class="fields2"><span id="cdtm" class="bt_date"></span></div><br class="clear">
-		<label>&nbsp;</label>
-        <div class="fields2"><input type="submit" value="SAVE"> <input
- type="button" id="cancel1" value="Cancel"></div><br class="clear">
-	</fieldset>
-	</form>
-	<br>
-	<div class="required" style="font-size: 9pt;" align="center">* Required fields</div>
-	<div id="bugedit_errors"></div>
+	<div id="bugedit_div" class="bugform" style="text-align: left; width: 580px; display: none;">
+		<form name="bt_form1" id="bugedit_form1"><br>
+		<input type="hidden" name="oldstatus" id="oldstatus" value="">
+		<fieldset>
+			<legend> BugTrack Record </legend>
+			<label>ID:</label>
+			<div class="fields2"><span id="bugedit_id"</span></div><br class="clear">
+			<label for="group"><span class="required">*</span>Group:</label>
+			<div class="fields2"><span id="bt_grp"></span></div><br class="clear">
+			<label for="descr"><span class="required">*</span>Description:</label>
+			<div class="fields2"><input type="text" name="descr" size="40" value=""></div><br class="clear">
+			<label for="product"><span class="required">*</span>Product or Application:</label>
+			<div class="fields2"><input type="text" name="product" size="40" value=""></div><br class="clear">
+			<label for="bug_type"><span class="required">*</span>Bug Type:</label>
+			<div class="fields2"><span id="btypes_s"></span></div><br class="clear">
+			<label for="status">Status:</label>
+			<div class="fields2"><span id="status_s"></span></div><br class="clear">
+			<label for="priority"><span class="required">*</span>Priority:</label>
+			<div class="fields2"><span id="priority_s"></span></div><br class="clear">
+			<label for="comments"><span class="required">*</span>Comments:</label>
+			<div class="fields2"><textarea name="comments" rows="4" cols="40" wrap="virtual"></textarea></div><br class="clear">
+			<label for="solution">Solution:</label>
+			<div class="fields2"><textarea name="solution" rows="4" cols="40" wrap="virtual"></textarea></div><br class="clear">
+			<label>Assigned To:</label>
+			<div class="fields2"><div id="assignedDiv2"></div><!--<input type="button" id="bt_assign_btn2" value="Assign" onclick="return bt.assign_search();">--></div><br class="clear">
+			<label>Entry Date/Time:</label>
+			<div class="fields2"><span id="edtm" class="bt_date"></span></div><br class="clear">
+			<label>Update Date/Time:</label>
+			<div class="fields2"><span id="udtm" class="bt_date"></span></div><br class="clear">
+			<label>Closed Date/Time:</label>
+			<div class="fields2"><span id="cdtm" class="bt_date"></span></div><br class="clear">
+			<label>&nbsp;</label>
+			<div class="fields2"><input type="submit" value="SAVE"> <input
+	 type="button" id="bt_bug_edit_cancel" value="Cancel"></div><br class="clear">
+		</fieldset>
+		</form>
+		<br>
+		<div class="required" style="font-size: 9pt;" align="center">* Required fields</div>
+		<div id="bugedit_errors"></div>
+	</div>
 </div>
 
 <div id="bt_email_div" class="bugform" style="display: none;">
@@ -275,42 +278,44 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 	</form>
 </div>
 
-<div id="bt_users_list" style="display: none;">
-	<input type="button" id="bt_admin_users_add" value="Add User">
-	<table id="bt_user_tbl" class="display" border="1" cellspacing="0" cellpadding="2">
-		<thead>
-		<tr>
-		<th>UID</th>
-		<th>Name</th>
-		<th>Email</th>
-		<th>Roles</th>
-		<th>Act</th>
-		<th>&nbsp;</th>
-		</tr>
-		</thead>
-	</table>
-</div>
-
-<div id="bt_users_form" style="display: none;">
-	<fieldset>
-		<legend>User Add/Edit</legend>
-		<form name="bt_user_form" id="bt_user_form_id">
-		<table id="bt_user_tbl2" border="0" cellspacing="0" cellpadding="2">
-		<tr><th align="right">UID</th><td><input type="text" name="uid1" size="20"></td></tr>
-		<tr><th align="right">Last Name</th><td><input type="text" name="lname" value=""></td></tr>
-		<tr><th align="right">First Name</th><td><input type="text" name="fname" value=""></td></tr>
-		<tr><th align="right">Email</th><td><input type="text" name="email" size="40" value=""></td></tr>
-		<tr><th align="right">Password</th><td><input type="password" name="pw" value=""><input type="hidden" name="pw2" value=""></td></tr>
-		<tr><th align="right">Active</th><td><label class="yesno"><input type="radio" name="active" value="y">Yes</label> <label class="yesno"><input type="radio" name="active" value="n">No</label></td></tr>
-		<tr><th align="right">Roles</th><td><label class="yesno"><input type="radio" name="roles"   value="admin">Admin</label> <label class="yesno"><input type="radio" name="roles"  value="ro">RO</label> <label class="yesno"><input type="radio" name="roles"  value="user">User</label></td></tr>
-		<tr><th align="right">Group</th><td><div id="bt_groups"></div></td></tr>
+<div id="bt_users_admin">
+	<div id="bt_users_list" class="bugform" style="display: none;">
+		<input type="button" id="bt_admin_users_add" value="Add User">
+		<table id="bt_user_tbl" class="display" border="1" cellspacing="0" cellpadding="2">
+			<thead>
+			<tr>
+			<th>UID</th>
+			<th>Name</th>
+			<th>Email</th>
+			<th>Roles</th>
+			<th>Act</th>
+			<th>&nbsp;</th>
+			</tr>
+			</thead>
 		</table>
-		<input type="submit" value="Save">
-		<input type="hidden" name="uid" value="">
-		<input type="hidden" name="id" value="">
-		</form>
-	</fieldset>
-	<div id="bt_admin_errors"></div>
+	</div>
+	<div id="bt_users_form" class="bugform" style="display: none;">
+		<fieldset>
+			<legend>User Add/Edit</legend>
+			<form name="bt_user_form" id="bt_user_form_id">
+			<table id="bt_user_tbl2" border="0" cellspacing="0" cellpadding="2">
+			<tr><th align="right">UID</th><td><input type="text" name="uid1" size="20"></td></tr>
+			<tr><th align="right">Last Name</th><td><input type="text" name="lname" value=""></td></tr>
+			<tr><th align="right">First Name</th><td><input type="text" name="fname" value=""></td></tr>
+			<tr><th align="right">Email</th><td><input type="text" name="email" size="40" value=""></td></tr>
+			<tr><th align="right">Password</th><td><input type="password" name="pw" value=""><input type="hidden" name="pw2" value=""></td></tr>
+			<tr><th align="right">Active</th><td><label class="yesno"><input type="radio" name="active" value="y">Yes</label> <label class="yesno"><input type="radio" name="active" value="n">No</label></td></tr>
+			<tr><th align="right">Roles</th><td><label class="yesno"><input type="radio" name="roles"   value="admin">Admin</label> <label class="yesno"><input type="radio" name="roles"  value="ro">RO</label> <label class="yesno"><input type="radio" name="roles"  value="user">User</label></td></tr>
+			<tr><th align="right">Group</th><td><div id="bt_groups"></div></td></tr>
+			</table>
+			<input type="submit" value="Save">
+			<input type="button" id="bt_user_save_cancel" value="Cancel">
+			<input type="hidden" name="uid" value="">
+			<input type="hidden" name="id" value="">
+			</form>
+		</fieldset>
+		<div id="bt_admin_errors"></div>
+	</div>
 </div>
 
 <div id="bughelp_div" style="display: none;">

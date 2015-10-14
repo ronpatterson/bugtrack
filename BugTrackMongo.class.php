@@ -15,14 +15,14 @@ function q ($val) {
 	if (empty($val)) return "NULL";
 	return "'".str_replace("'","''",$val)."'";
 }
-	
+
 class BugTrack {
 	protected $mdb;
 	protected $db;
 	protected $adir = "/usr/local/data/";
 	protected $collsArray = array();
 	protected $lookups = array();
-	
+
 	public function __construct ( $dbpath )
 	{
 		// MongoDB database version
@@ -30,6 +30,8 @@ class BugTrack {
 		{
 			//$this->mdb = new MongoClient($dbpath);
 			$this->mdb = new Mongo($dbpath);
+			//$this->mdb->authenticate('admin','usI6F_-zy7yX');
+			//$this->db = $this->mdb->php;
 			$this->db = $this->mdb->bugtrack;
 			//var_dump($this->db);
 		}
@@ -41,19 +43,19 @@ class BugTrack {
 		}
 		$this->lookups = $this->getBTlookups();
 	}
-	
+
 	public function __destruct ()
 	{
 		@$this->mdb->close();
 		$this->mdb = null;
 	}
-	
+
 	public function getCollections ()
 	{
 		$this->collsArray = $this->mdb->getCollectionNames();
 		return $this->collsArray;
 	}
-	
+
 	public function buildCollectionsList ()
 	{
 		if (count($this->collsArray) == 0) $this->getCollections();
@@ -117,22 +119,22 @@ END;
 		while ($coll->hasNext())
 		{
 			$lu = $coll->getNext();
-		}
-		foreach (array("bt_type","bt_group","bt_status","bt_priority") as $type)
-		{
-			$arr = array();
-			foreach ($lu[$type] as $item)
+			foreach (array("bt_type","bt_group","bt_status","bt_priority") as $type)
 			{
-				if ($item["active"] != "y") continue;
-				$arr[] = array("cd"=>$item["cd"],"descr"=>$item["descr"]);
+				$arr = array();
+				foreach ($lu[$type] as $item)
+				{
+					if ($item["active"] != "y") continue;
+					$arr[] = array("cd"=>$item["cd"],"descr"=>$item["descr"]);
+				}
+				//sort($arr);
+				$results[$type] = $arr;
 			}
-			//sort($arr);
-			$results[$type] = $arr;
 		}
 		$results["roles"] = isset($_SESSION["roles"]) ? $_SESSION["roles"] : "";
 		return $results;
 	}
-	
+
 	public function getBTlookup ( $type, $cd )
 	{
 		$arr = $this->lookups[$type];
@@ -142,7 +144,7 @@ END;
 		}
 		return null;
 	}
-	
+
 	public function getBug ($id)
 	{
 		// id, descr, product, user_nm, bug_type, status, priority, comments, solution, assigned_to, bug_id, entry_dtm, update_dtm, closed_dtm,worklog,attachments
@@ -206,7 +208,7 @@ END;
 		}
 		return array("data"=>$results);
 	}
-	
+
 	private function getNextSequence ($name) {
 		$ret = $this->db->counters->findAndModify (
 			array( "_id" => $name ),
@@ -227,16 +229,16 @@ END;
 		extract($rec);
 		//error_log("rec=".print_r($rec,1));
 		$bid = $this->getNextSequence("bug_id");
-		$arr = explode("|",$group);
-		$group = $arr[0];
-		$bug_id="$group$bid";
+		//$arr = explode("|",$group);
+		//$group = $arr[0];
+		$bug_id="$bt_group$bid";
 		$iid = new MongoId(); // generate a _id
 		$arrTemp = array(
   "_id" => $iid
 , "bug_id" => $bug_id
 , "descr" => $descr
 , "product" => $product
-, "user_nm" => $user_nm
+, "user_nm" => $_SESSION["user_id"]
 , "bug_type" => substr($bug_type,0,1)
 , "status" => $status
 , "priority" => $priority
@@ -249,15 +251,18 @@ END;
 		//var_dump($res);
 		//$count = $res["n"];
 		if (!$res) die("ERROR: Record not added! $sql");
-		return (string)$iid.",".$bug_id;
+		return "SUCCESS ".(string)$iid.",".$bug_id;
 	}
 
 	// rec = record array
 	public function updateBug ($rec)
 	{
 		extract($rec);
+		$bid = preg_replace("/.*(\\d+)$/",'$1',$bug_id);
+		$bug_id = "$bt_group$bid";
 		$arrTemp = array(
-  "descr" => $descr
+  "bug_id" => $bug_id
+, "descr" => $descr
 , "product" => $product
 , "bug_type" => $bug_type
 , "status" => $status
@@ -272,6 +277,7 @@ END;
 		$res = $this->db->bt_bugs->update(array("_id"=>new MongoId($id)),array('$set'=>$arrTemp));
 		//$count = $res["n"];
 		if (!$res) die("ERROR: Record not updated!");
+		return "SUCCESS";
 	}
 
 	public function deleteBug ($id)
@@ -349,8 +355,8 @@ END;
 			$aname = "{$arr["lname"]}, {$arr["fname"]}";
 			$aemail = $arr["email"];
 		} else $aname="";
-		$status = getBTlookup("bt_status",$rec->status);
-		$priority = getBTlookup("bt_priority",$rec->priority);
+		$status = $this->getBTlookup("bt_status",$rec->status);
+		$priority = $this->getBTlookup("bt_priority",$rec->priority);
 		$msg = "{$args["msg2"]}
 
 Details of Bug ID {$rec->bug_id}.
@@ -362,8 +368,8 @@ Status: {$status}
 Priority: {$priority}
 Comments: {$rec->comments}
 Solution: {$rec->solution}
-Entry By: $ename
 Assigned To: $aname
+Entry By: $ename
 Entry Date/Time: {$rec->edtm}
 Update Date/Time: {$rec->udtm}
 Closed Date/Time: {$rec->cdtm}
@@ -393,7 +399,7 @@ Comments: $comments
 		if (!preg_match("/@/",$sendto)) $sendto.="@wilddogdesign.com";
 		if ($cc != "" and !preg_match("/@/",$cc)) $cc.="@wilddogdesign.com";
 		if ($cc != "") $ccx="CC: $cc"; else $ccx="";
-		if (1) {
+		if (0) {
 		$msg = nl2br($msg);
 		return <<<END
 To: $sendto<br>
@@ -403,7 +409,8 @@ Content:<br>
 $msg
 END;
 		}
-		//mail($sendto,$subject,stripcslashes($msg),$ccx);
+		mail($sendto,$subject,stripcslashes($msg),$ccx);
+		return "Message sent";
 	}
 
 	public function getBugTypeDescr ($bug_type)
@@ -458,7 +465,7 @@ END;
 		$fp = fopen($this->adir.$pdir."/".$hash,"wb");
 		fwrite($fp,$raw_file);
 		fclose($fp);
-		
+
 		return 1;
 	}
 
@@ -563,7 +570,7 @@ END;
 		//$count = $res["n"];
 		if (!$res) die("ERROR: Record not updated!");
 	}
-	
+
 	public function assign_user ($args)
 	{
 		$arrTemp = array(
@@ -573,7 +580,7 @@ END;
 		$this->db->bt_bugs->update(array("_id" => new MongoId($args["id"])),array('$set' => $arrTemp));
 		return "Assignment done";
 	}
-	
+
 	public function get_admin_emails ()
 	{
 		$results = array();
@@ -591,7 +598,7 @@ END;
 		}
 		return join(",",$results);
 	}
-	
+
 	public function check_session ()
 	{
 		return (isset($_SESSION["user_id"]) and $_SESSION["user_id"] != "") ? 1 : 0;

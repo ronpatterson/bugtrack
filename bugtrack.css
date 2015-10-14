@@ -168,7 +168,7 @@ div#group,div#group2 {
 
 .bugform {
 	text-align: left;
-	width: 500px;
+	/*width: 500px;*/
 	margin-left: auto;
 	margin-right: auto;
 }

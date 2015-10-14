@@ -18,19 +18,18 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'html',
-			success: function (response)
+			dataType: 'html'
+		}).done(function (response)
+		{
+			if (response == 0)
 			{
-				if (response == 0)
-				{
-					if (bt.stimer != 0) window.clearInterval(bt.stimer);
-					bt.stimer = 0;
-					bt.login_form();
-				}
-				else
-				{
-					$('#bt_user_heading').show();
-				}
+				if (bt.stimer != 0) window.clearInterval(bt.stimer);
+				bt.stimer = 0;
+				bt.login_form();
+			}
+			else
+			{
+				$('#bt_user_heading').show();
 			}
 		});
 		return false;
@@ -69,18 +68,18 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'html',
-			success: function (response)
+			dataType: 'html'
+		}).done(function (response)
+		{
+			if (/FAIL/.test(response))
 			{
-				if (/FAIL/.test(response))
-				{
-					$('#login_errors').html(response);
-					return false;
-				}
-				else
-				{
-					var row = $.parseJSON(response);
-					$('#dialog-login').dialog('close');
+				$('#login_errors').html(response);
+				return false;
+			}
+			else
+			{
+				var row = $.parseJSON(response);
+				$('#dialog-login').dialog('close');
 // 					var user = $('<div></div>')
 // 						.css('position','absolute')
 // 						.css('width','30em')
@@ -90,12 +89,11 @@ var bt = // setup the bt namespace
 // 						.css('font-size','9pt')
 // 						.html('Welcome '+row.fname+' '+'<a href="#" onclick="return bt.logout_handler();">Logout</a>');
 // 					$('body').append(user);
-					$('#bt_user_name_top').html(row.fname+' '+row.lname);
-					$('#bt_user_heading').show();
-					$('#bt_admin_btn').show();
-					if (!/admin/.test(row.roles)) $('#bt_admin_btn').hide();
-					bt.stimer = window.setInterval(bt.check_session,300000);
-				}
+				$('#bt_user_name_top').html(row.fname+' '+row.lname);
+				$('#bt_user_heading').show();
+				$('#bt_admin_btn').show();
+				if (!/admin/.test(row.roles)) $('#bt_admin_btn').hide();
+				bt.stimer = window.setInterval(bt.check_session,300000);
 			}
 		});
 		return false;
@@ -108,9 +106,7 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'html',
-			success: function (response)
-			{}
+			dataType: 'html'
 		});
 		window.setTimeout(bt.check_session,1000); // a bit of a delay
 		return false;
@@ -170,7 +166,7 @@ var bt = // setup the bt namespace
 		$('#bt_tbl tbody').on( 'click', 'button', function () {
 			var data = table.row( $(this).parents('tr') ).data();
 			//alert( 'id='+data[4]);
-			bt.bugshow(event,data._id);
+			bt.bugshowdialog(event,data._id);
 		} );
 		$('#bt_bugs_list').show();
 		return false;
@@ -178,7 +174,7 @@ var bt = // setup the bt namespace
 
 	bugadd: function ( event )
 	{
-		bt.showDialogDiv('BugTrack Add','bugedit_div');
+		bt.showDialogDiv('BugTrack Bug Add','bt_bugs_show_edit');
 		$('#bugedit_errors').html('');
 		$('#bugedit_form1 input[type="text"]').val('');
 		$('#bugedit_form1 textarea').val('');
@@ -192,6 +188,8 @@ var bt = // setup the bt namespace
 		$('select[name="priority"]').val('3');
 		$('#filesDiv,#bfiles,#assignedDiv').html('');
 		$('.bt_date').html('');
+		$('#bugshow_div').hide();
+		$('#bugedit_div').show();
 		return false;
 	},
 
@@ -205,37 +203,45 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'json',
-			success: function (data)
-			{
-				//$('#content_div').html(response);
-				$('#bugshow_div').dialog('close');
-				bt.showDialogDiv('BugTrack Edit '+data.bug_id,'bugedit_div');
-				$('#bugedit_errors').html('');
-				$('#bugedit_id').html(data.bug_id);
-				$('#oldstatus').val(data.status);
-				var grp = data.bug_id.replace(/\d+$/,'');
-				$('select[name="bt_group"]').val(grp);
-				$('input[name="descr"]').val(data.descr);
-				$('input[name="product"]').val(data.product);
-				$('select[name="bug_type"]').val(data.bug_type);
-				$('select[name="status"]').val(data.status);
-				$('select[name="priority"]').val(data.priority);
-				$('#assignedDiv2').html(data.aname);
-				$('#bt_assign_btn2').show();
-				$('textarea[name="comments"]').val(data.comments);
-				$('textarea[name="solution"]').val(data.solution);
-				$('#edtm').html(data.edtm);
-				$('#udtm').html(data.udtm);
-				$('#cdtm').html(data.cdtm);
-	// 			$('#bdate').datepicker(
-	// 			{
-	// 				yearRange: '-80:+1',
-	// 				changeMonth: true,
-	// 				changeYear: true
-	// 			});
-			}
+			dataType: 'json'
+		}).done(function (data)
+		{
+			//$('#content_div').html(response);
+			//$('#bugshow_div').dialog('close');
+			//bt.showDialogDiv('BugTrack Bug '+data.bug_id,'bt_bugs_show_edit');
+			$('#bugedit_errors').html('');
+			$('#bugedit_id').html(data.bug_id);
+			$('#oldstatus').val(data.status);
+			var grp = data.bug_id.replace(/\d+$/,'');
+			$('select[name="bt_group"]').val(grp);
+			$('input[name="descr"]').val(data.descr);
+			$('input[name="product"]').val(data.product);
+			$('select[name="bug_type"]').val(data.bug_type);
+			$('select[name="status"]').val(data.status);
+			$('select[name="priority"]').val(data.priority);
+			$('#assignedDiv2').html(data.aname);
+			$('#bt_assign_btn2').show();
+			$('textarea[name="comments"]').val(data.comments);
+			$('textarea[name="solution"]').val(data.solution);
+			$('#edtm').html(data.edtm);
+			$('#udtm').html(data.udtm);
+			$('#cdtm').html(data.cdtm);
+// 			$('#bdate').datepicker(
+// 			{
+// 				yearRange: '-80:+1',
+// 				changeMonth: true,
+// 				changeYear: true
+// 			});
+			$('#bugshow_div').hide();
+			$('#bugedit_div').show();
 		});
+		return false;
+	},
+	
+	bugshowdialog: function ( event, id )
+	{
+		bt.showDialogDiv('BugTrack Bug','bt_bugs_show_edit');
+		bt.bugshow(event,id);
 		return false;
 	},
 
@@ -248,32 +254,32 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'json',
-			success: function (data)
-			{
-				//$('#content_div').html(response);
-				bt.showDialogDiv('BugTrack Entry '+data.bug_id,'bugshow_div');
-				//console.log(data);
-				var group_cd = data.bug_id.replace(/\d+$/,'');
-				$('#bt_admin_errors').html('');
-				$('#bug_id').val(data.bug_id);
-				$('#bug_id2_v').html(data.bug_id);
-				$('#bid').val(id);
-				$('#descr_v').html(data.descr);
-				$('#product_v').html(data.product);
-				$('#bt_v').html(bt.get_lookup(bt.group_data.bt_group,group_cd));
-				$('#status_v').html(data.status_descr);
-				$('#priority_v').html(data.priority_descr);
-				$('#assignedDiv1').html(data.aname);
-				$('#comments_v').html(data.comments);
-				$('#solution_v').html(data.solution);
-				$('#ename_v').html(data.ename);
-				$('#edtm_v').html(data.edtm);
-				$('#udtm_v').html(data.udtm);
-				$('#cdtm_v').html(data.cdtm);
-				bt.get_files(event);
-				bt.worklog_show(event,data);
-			}
+			dataType: 'json'
+		}).done(function (data)
+		{
+			//console.log(data);
+			$('#bt_bugs_show_edit').dialog('option','title','BugTrack Bug '+data.bug_id);
+			var group_cd = data.bug_id.replace(/\d+$/,'');
+			$('#bt_admin_errors').html('');
+			$('#bug_id').val(data.bug_id);
+			$('#bug_id2_v').html(data.bug_id);
+			$('#bid').val(id);
+			$('#descr_v').html(data.descr);
+			$('#product_v').html(data.product);
+			$('#bt_v').html(bt.get_lookup(bt.group_data.bt_group,group_cd));
+			$('#status_v').html(data.status_descr);
+			$('#priority_v').html(data.priority_descr);
+			$('#assignedDiv1').html(data.aname);
+			$('#comments_v').html(data.comments);
+			$('#solution_v').html(data.solution);
+			$('#ename_v').html(data.ename);
+			$('#edtm_v').html(data.edtm);
+			$('#udtm_v').html(data.udtm);
+			$('#cdtm_v').html(data.cdtm);
+			bt.get_files(event);
+			bt.worklog_show(event,data);
+			bt.bug_save_cancel();
+			$('#bugshow_div').show();
 		});
 		return false;
 	},
@@ -299,13 +305,21 @@ var bt = // setup the bt namespace
 		}
 	},
 
+	bug_save_cancel: function( event )
+	{
+		$('#bugshow_div').show();
+		$('#bugedit_div').hide();
+		return false;
+	},
+
 	bughelp: function ( event )
 	{
 		bt.showDialogDiv('BugTrack Help','bughelp_div');
 		return false;
 	},
 
-	bughandler: function( event ) {
+	bughandler: function( event )
+	{
 		//alert('bughandler '+$('#bugedit_form1').serialize()); return false;
 		var err = bt.validate();
 		if (err != '')
@@ -317,16 +331,25 @@ var bt = // setup the bt namespace
 		var params = 'action=add_update&'+$('#bugedit_form1').serialize();
 		params += '&id='+$('#bid').val();
 		params += '&bug_id='+$('#bug_id').val();
+		params += '&user_id='+$('#userid').val();
 		//alert('bughandler '+params);
 		$.ajax({
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'html',
-			success: function (response)
+			dataType: 'html'
+		}).done(function (response)
+		{
+			if (!/SUCCESS/.test(response))
 			{
 				$('#bugedit_errors').html(response);
+			}
+			else
+			{
 				bt.buglist(event);
+				$('#bt_bugs_list_edit').dialog('close');
+				if ($('#bid').val() == '') bt.bug_save_cancel();
+				else bt.bugshow(event,$('#bid').val());
 				//window.setTimeout(function(e) {$('#bugedit_div').dialog('close');},3000);
 			}
 		});
@@ -342,17 +365,16 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'html',
-			success: function (response)
+			dataType: 'html'
+		}).done(function (response)
+		{
+			if (/^SUCCESS/.test(response))
 			{
-				if (/^SUCCESS/.test(response))
-				{
-					$('#bugshow_div').dialog('close');
-					bt.buglist(event);
-				}
-				else
-					alert(response);
+				$('#bt_bugs_show_edit').dialog('close');
+				bt.buglist(event);
 			}
+			else
+				alert(response);
 		});
 		return false;
 	},
@@ -372,7 +394,7 @@ var bt = // setup the bt namespace
 			'ajax': {
 				'url': bt.URL,
 				'type': 'post',
-				'data': { 
+				'data': {
 					'action': 'getUsersSearch',
 					'lname': f.lname.value,
 					'fname': f.fname.value
@@ -401,7 +423,7 @@ var bt = // setup the bt namespace
 		} );
 		return false;
 	},
-	
+
 	assign_user: function ( event, user )
 	{
 		var id = $('#bid').val();
@@ -412,12 +434,11 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'html',
-			success: function (response)
-			{
-				$('#bt_users_search').dialog('close');
-				bt.bugshow(event,id);
-			}
+			dataType: 'html'
+		}).done(function (response)
+		{
+			$('#bt_users_search').dialog('close');
+			bt.bugshow(event,id);
 		});
 		return false;
 	},
@@ -457,22 +478,21 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'html',
-			success: function (response)
+			dataType: 'html'
+		}).done(function (response)
+		{
+			if (/^SUCCESS/.test(response))
 			{
-				if (/^SUCCESS/.test(response))
-				{
-					$('#bt_worklog_form').dialog('close');
-					$('#bugshow_div').dialog('close');
-					window.setTimeout(function(){bt.bugshow(event,id);},200);
-				}
-				else
-					$('#wl_errors').html(response);
+				$('#bt_worklog_form').dialog('close');
+				bt.bugshow(event,$('#bid').val());
+				window.setTimeout(function(){bt.bugshow(event,id);},200);
 			}
+			else
+				$('#wl_errors').html(response);
 		});
 		return false;
 	},
-	
+
 	get_worklog: function (id) {
 		$('#worklogDiv').html("Loading...");
 		//alert("search_list called");
@@ -490,22 +510,21 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'json',
-			success: function (data)
+			dataType: 'json'
+		}).done(function (data)
+		{
+			var out = '';
+			if (data.length == 0)
+				out = 'No attachments';
+			else
 			{
-				var out = '';
-				if (data.length == 0)
-					out = 'No attachments';
-				else
+				$.each(data,function (i)
 				{
-					$.each(data,function (i)
-					{
-						var id = $('#bid').val();
-						out += '<a href="get_file.php?id='+id+'&idx='+i+'" target="_blank">'+data[i].file_name+'</a> ('+data[i].file_size+') <span onclick="return remove_file('+id+','+i+');">Remove</span><br>';
-					});
-				}
-				$('#filesDiv').html(out);
+					var id = $('#bid').val();
+					out += '<a href="get_file.php?id='+id+'&idx='+i+'" target="_blank">'+data[i].file_name+'</a> ('+data[i].file_size+') <span onclick="return remove_file('+id+','+i+');">Remove</span><br>';
+				});
 			}
+			$('#filesDiv').html(out);
 		});
 	},
 
@@ -529,11 +548,10 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'html',
-			success: function (response)
-			{
-				$('#email_errors').html(response);
-			}
+			dataType: 'html'
+		}).done(function (response)
+		{
+			$('#email_errors').html(response);
 		});
 		return false;
 	},
@@ -546,7 +564,7 @@ var bt = // setup the bt namespace
 		$('#email_errors').html('');
 		return true;
 	},
-	
+
 	email_bug: function (e) {
 		var err = '';
 		if ($.trim($('input[name="sendto"]').val()) == '')
@@ -566,11 +584,10 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'html',
-			success: function (response)
-			{
-				$('#email_errors').html(response);
-			}
+			dataType: 'html'
+		}).done(function (response)
+		{
+			$('#email_errors').html(response);
 		});
 		return false;
 	},
@@ -595,7 +612,7 @@ var bt = // setup the bt namespace
 
 	bugadmin: function ( event )
 	{
-		bt.showDialogDiv('BugTrack Admin','bt_users_list',700);
+		bt.showDialogDiv('BugTrack Admin','bt_users_admin',700);
 		$('#bt_admin_users_add').click(bt.user_add);
 		bt.bugadmin_users();
 		return false;
@@ -632,12 +649,14 @@ var bt = // setup the bt namespace
 			//console.log(data);
 			bt.user_show(event,data.uid);
 		} );
+		$('#bt_users_list').show();
+		$('#bt_users_form').hide();
 		return false;
 	},
 
 	user_add: function ( event )
 	{
-		bt.showDialogDiv('User Add','bt_users_form');
+		//bt.showDialogDiv('User Add','bt_users_form');
 		$('#bt_admin_errors').html('');
 		$('#bt_users_form input[type="text"]').val('');
 		$('input[name="pw"]').val('');
@@ -651,6 +670,8 @@ var bt = // setup the bt namespace
 		$('input[name="roles"]').removeAttr('checked');
 		$('input[name="roles"][value="user"]').prop('checked',true);
 		$('select[name="bt_group"]').val('');
+		$('#bt_users_list').hide();
+		$('#bt_users_form').show();
 	},
 
 	user_show: function ( event, uid )
@@ -662,32 +683,40 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'json',
-			success: function (data)
-			{
-				//console.log(data);
-				bt.showDialogDiv('User Edit','bt_users_form');
-				$('#bt_user_form_id').submit(bt.userhandler);
-				$('#bt_admin_errors').html('');
-				$('input[name="uid"]').val(uid);
-				$('input[name="id"]').val(data.id);
-				$('input[name="uid1"]').val(uid);
-				$('input[name="uid1"]').attr('readonly',true);
-				$('input[name="lname"]').val(data.lname);
-				$('input[name="fname"]').val(data.fname);
-				$('input[name="email"]').val(data.email);
-				$('input[name="active"]').removeAttr('checked');
-				if (data.active == 'y') $('input[name="active"][value="y"]').prop('checked',true);
-				else $('input[name="active"][value="n"]').prop('checked',true);
-				$('input[name="roles"]').removeAttr('checked');
-				if (data.roles == 'admin') $('input[name="roles"][value="admin"]').prop('checked',true);
-				else if (data.roles == 'ro') $('input[name="roles"][value="ro"]').prop('checked',true);
-				else $('input[name="roles"][value="user"]').prop('checked',true);
-				$('input[name="pw"]').val(data.pw);
-				$('input[name="pw2"]').val(data.pw);
-				$('select[name="bt_group"]').val(data.bt_group);
-			}
+			dataType: 'json'
+		}).done(function (data)
+		{
+			//console.log(data);
+			//bt.showDialogDiv('User Edit','bt_users_form');
+			$('#bt_user_form_id').submit(bt.userhandler);
+			$('#bt_admin_errors').html('');
+			$('input[name="uid"]').val(uid);
+			$('input[name="id"]').val(data.id);
+			$('input[name="uid1"]').val(uid);
+			$('input[name="uid1"]').attr('readonly',true);
+			$('input[name="lname"]').val(data.lname);
+			$('input[name="fname"]').val(data.fname);
+			$('input[name="email"]').val(data.email);
+			$('input[name="active"]').removeAttr('checked');
+			if (data.active == 'y') $('input[name="active"][value="y"]').prop('checked',true);
+			else $('input[name="active"][value="n"]').prop('checked',true);
+			$('input[name="roles"]').removeAttr('checked');
+			if (data.roles == 'admin') $('input[name="roles"][value="admin"]').prop('checked',true);
+			else if (data.roles == 'ro') $('input[name="roles"][value="ro"]').prop('checked',true);
+			else $('input[name="roles"][value="user"]').prop('checked',true);
+			$('input[name="pw"]').val(data.pw);
+			$('input[name="pw2"]').val(data.pw);
+			$('select[name="bt_group"]').val(data.bt_group);
 		});
+		$('#bt_users_list').hide();
+		$('#bt_users_form').show();
+		return false;
+	},
+
+	user_save_cancel: function( event )
+	{
+		$('#bt_users_list').show();
+		$('#bt_users_form').hide();
 		return false;
 	},
 
@@ -717,12 +746,11 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'html',
-			success: function (response)
-			{
-				$('#bt_admin_errors').html(response);
-				bt.bugadmin_users(event);
-			}
+			dataType: 'html'
+		}).done(function (response)
+		{
+			$('#bt_admin_errors').html(response);
+			bt.bugadmin_users(event);
 		});
 		return false;
 	},
@@ -770,6 +798,7 @@ var bt = // setup the bt namespace
 		  hide: 'fade',
 		  close: function (e,ui)
 		  {
+		  	$('#'+div+' > div.bugform').hide();
 			$(this).dialog('destroy');
 		  }
 		});
@@ -780,13 +809,13 @@ var bt = // setup the bt namespace
 		$('#bugedit_div').dialog('close');
 		bt.buglist();
 	},
-	
+
 	cancelDialog2: function ( event )
 	{
 		$('#bt_worklog_form').dialog('close');
 		bt.buglist();
 	},
-	
+
 	nl2br: function ( val )
 	{
 		return val.replace(/\r?\n/g,'<br>');
@@ -814,7 +843,7 @@ var bt = // setup the bt namespace
 		//console.log(obj);
 		return obj;
 	},
-	
+
 	get_lookup: function ( group, cd )
 	{
 		//debugger;
@@ -844,9 +873,10 @@ var bt = // setup the bt namespace
 		$('#bt_form2').submit(bt.workloghandler);
 		$('#bt_form9').submit(bt.handle_search);
 		$('#bug_email_form').submit(bt.email_bug);
-		$('#cancel1').click(bt.cancelDialog);
 		$('#cancel2').click(bt.cancelDialog2);
+		$('#bt_bug_edit_cancel').click(bt.bug_save_cancel);
 		$('#bt_user_form_id').submit(bt.userhandler);
+		$('#bt_user_save_cancel').click(bt.user_save_cancel);
 		$('#bt_show_buttons span').button();
 		$('#bt_admin_btn').show();
 		var params = 'action=bt_init';
@@ -854,27 +884,26 @@ var bt = // setup the bt namespace
 			url: bt.URL,
 			type: 'post',
 			data: params,
-			dataType: 'json',
-			success: function (data)
-			{
-				//console.log(data);
-				bt.group_data = data;
-				var sel = bt.build_selection('bt_group',data.bt_group);
-				$('#bt_groups').empty().append(sel);
-				var sel = bt.build_selection('bt_group',data.bt_group);
-				$('#bt_grp').empty().append(sel);
-				var sel = bt.build_selection('bug_type',data.bt_type);
-				$('#btypes_s').empty().append(sel);
-				var sel = bt.build_selection('status',data.bt_status);
-				$('#status_s').empty().append(sel);
-				var sel = bt.build_selection('priority',data.bt_priority);
-				$('#priority_s').empty().append(sel);
-				var sel = bt.build_selection('bug_type2',data.bt_type);
-				$('#btc_types').empty().append(sel);
-				var sel = bt.build_selection('status2',data.bt_status);
-				$('#btc_status').empty().append(sel);
-				if (!/admin/.test(bt.group_data.roles)) $('#bt_admin_btn').hide();
-			}
+			dataType: 'json'
+		}).done(function (data)
+		{
+			//console.log(data);
+			bt.group_data = data;
+			var sel = bt.build_selection('bt_group',data.bt_group);
+			$('#bt_groups').empty().append(sel);
+			var sel = bt.build_selection('bt_group',data.bt_group);
+			$('#bt_grp').empty().append(sel);
+			var sel = bt.build_selection('bug_type',data.bt_type);
+			$('#btypes_s').empty().append(sel);
+			var sel = bt.build_selection('status',data.bt_status);
+			$('#status_s').empty().append(sel);
+			var sel = bt.build_selection('priority',data.bt_priority);
+			$('#priority_s').empty().append(sel);
+			var sel = bt.build_selection('bug_type2',data.bt_type);
+			$('#btc_types').empty().append(sel);
+			var sel = bt.build_selection('status2',data.bt_status);
+			$('#btc_status').empty().append(sel);
+			if (!/admin/.test(bt.group_data.roles)) $('#bt_admin_btn').hide();
 		});
 	}
 
