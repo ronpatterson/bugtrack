@@ -2,6 +2,23 @@
 //
 // Ron Patterson, WildDog Design
 
+// some utility functions
+if (typeof(String.trim) == 'undefined')
+{
+	String.prototype.trim = function()
+	{
+		return this.replace(/^\s+/,'').replace(/\s+$/,'');
+	}
+}
+
+if (typeof(String.blank) == 'undefined')
+{
+	String.prototype.blank = function()
+	{
+		return /^\s*$/.test(this);
+	}
+}
+
 var bt = // setup the bt namespace
 {
 
@@ -55,7 +72,7 @@ var bt = // setup the bt namespace
 			//beforeClose: function( event, ui ) {return false;}
 		});
 		$('#login_errors').html('');
-		$('#bt_login_form').submit(bt.login_handler);
+		$('#bt_login_form').on('submit',bt.login_handler);
 		$('input[name="uid"]').focus();
 		return false;
 	},
@@ -461,7 +478,7 @@ var bt = // setup the bt namespace
 		//alert('workloghandler '+$('#bt_form2').serialize()); return false;
 		//var err = bt.validate();
 		var err = '';
-		if ($.trim($('textarea[name="wl_comments"]').val()) == '')
+		if ($('textarea[name="wl_comments"]').val().blank())
 			err += ' - Worklog Comments must not be blank<br>';
 		if (err != '')
 		{
@@ -567,9 +584,9 @@ var bt = // setup the bt namespace
 
 	email_bug: function (e) {
 		var err = '';
-		if ($.trim($('input[name="sendto"]').val()) == '')
+		if ($('input[name="sendto"]').val().blank())
 			err += ' - Send To must not be blank<br>';
-		if ($.trim($('input[name="subject"]').val()) == '')
+		if ($('input[name="subject"]').val().blank())
 			err += ' - Subject must not be blank<br>';
 		if (err != '')
 		{
@@ -597,13 +614,13 @@ var bt = // setup the bt namespace
 		var datere = /^[01][0-9]\/[0-3][0-9]\/(19|20)[0-9]{2}$/;
 		var err = '';
 		var f = document.bt_form1;
-		if ($.trim(f.descr.value) == '')
+		if (f.descr.value.blank())
 			err += ' - Description must not be blank<br>';
-		if ($.trim(f.product.value) == '')
+		if (f.product.value.blank())
 			err += ' - Product or Application must not be blank<br>';
-		if ($.trim(f.bug_type.value) == '')
+		if (f.bug_type.value.blank())
 			err += ' - Bug Type must be selected<br>';
-		if ($.trim(f.comments.value) == '')
+		if (f.comments.value.blank())
 			err += ' - Comments must not be blank<br>';
 	// 	if (!datere.test($('#bdate').val()))
 	// 		err += ' - Birth date is not valid (mm/dd/yyyy)<br>';
@@ -613,7 +630,7 @@ var bt = // setup the bt namespace
 	bugadmin: function ( event )
 	{
 		bt.showDialogDiv('BugTrack Admin','bt_users_admin',700);
-		$('#bt_admin_users_add').click(bt.user_add);
+		$('#bt_admin_users_add').on('click',bt.user_add);
 		bt.bugadmin_users();
 		return false;
 	},
@@ -688,7 +705,7 @@ var bt = // setup the bt namespace
 		{
 			//console.log(data);
 			//bt.showDialogDiv('User Edit','bt_users_form');
-			$('#bt_user_form_id').submit(bt.userhandler);
+			$('#bt_user_form_id').on('submit',bt.userhandler);
 			$('#bt_admin_errors').html('');
 			$('input[name="uid"]').val(uid);
 			$('input[name="id"]').val(data.id);
@@ -726,13 +743,13 @@ var bt = // setup the bt namespace
 // 		var err = bt.validate();
 		var f = document.bt_user_form;
 		var err = '';
-		if ($.trim(f.uid.value) == '')
+		if (f.uid1.value.blank())
 			err += " - UID must not be blank<br>";
-		if ($.trim(f.lname.value) == "")
+		if (f.lname.value.blank())
 			err += " - Last Name must not be blank<br>";
 		if (!emailre.test(f.email.value))
 			err += ' - Email is not valid<br>';
-		if ($.trim(f.bt_group.value) == "")
+		if (f.bt_group.value.blank())
 			err += " - Group must be selected<br>";
 		if (err != '')
 		{
@@ -804,13 +821,19 @@ var bt = // setup the bt namespace
 		});
 	},
 
-	cancelDialog: function ( event )
+	bugCancelDialog: function ( event )
 	{
-		$('#bugedit_div').dialog('close');
+		if ($('#bugedit_id').text() == '')
+			$('#bt_bugs_show_edit').dialog('close');
+		else
+		{
+			$('#bugshow_div').show();
+			$('#bugedit_div').hide();
+		}
 		bt.buglist();
 	},
 
-	cancelDialog2: function ( event )
+	worklogCancelDialog: function ( event )
 	{
 		$('#bt_worklog_form').dialog('close');
 		bt.buglist();
@@ -862,21 +885,21 @@ var bt = // setup the bt namespace
 	init: function ( )
 	{
 		$('#bt_refresh_btn').button();
-		$('#bt_refresh_btn').click(bt.buglist);
+		$('#bt_refresh_btn').on('click',bt.buglist);
 		$('#bt_add_btn').button();
-		$('#bt_add_btn').click(bt.bugadd);
+		$('#bt_add_btn').on('click',bt.bugadd);
 		$('#bt_admin_btn').button();
-		$('#bt_admin_btn').click(bt.bugadmin);
+		$('#bt_admin_btn').on('click',bt.bugadmin);
 		$('#bt_help_btn').button();
-		$('#bt_help_btn').click(bt.bughelp);
-		$('#bugedit_form1').submit(bt.bughandler);
-		$('#bt_form2').submit(bt.workloghandler);
-		$('#bt_form9').submit(bt.handle_search);
-		$('#bug_email_form').submit(bt.email_bug);
-		$('#cancel2').click(bt.cancelDialog2);
-		$('#bt_bug_edit_cancel').click(bt.bug_save_cancel);
-		$('#bt_user_form_id').submit(bt.userhandler);
-		$('#bt_user_save_cancel').click(bt.user_save_cancel);
+		$('#bt_help_btn').on('click',bt.bughelp);
+		$('#bugedit_form1').on('submit',bt.bughandler);
+		$('#bt_form2').on('submit',bt.workloghandler);
+		$('#bt_form9').on('submit',bt.handle_search);
+		$('#bug_email_form').on('submit',bt.email_bug);
+		$('#cancel2').on('click',bt.worklogCancelDialog);
+		$('#bt_bug_edit_cancel').on('click',bt.bugCancelDialog);
+		$('#bt_user_form_id').on('submit',bt.userhandler);
+		$('#bt_user_save_cancel').on('click',bt.user_save_cancel);
 		$('#bt_show_buttons span').button();
 		$('#bt_admin_btn').show();
 		var params = 'action=bt_init';
